@@ -1,0 +1,599 @@
+[
+  {
+    "id": "hummus-clasico",
+    "title": "Hummus clásico",
+    "nationality": "arabe",
+    "time": 10,
+    "tags": [
+      "vegano",
+      "halal",
+      "sin_gluten"
+    ],
+    "baseServings": 1,
+    "ingredients": [
+      {
+        "name": "Garbanzos cocidos",
+        "key": "garbanzos-cocidos",
+        "qty": 150,
+        "unit": "g"
+      },
+      {
+        "name": "Tahini",
+        "key": "tahini",
+        "qty": 1,
+        "unit": "cda"
+      },
+      {
+        "name": "Limón",
+        "key": "limon",
+        "qty": 0.5,
+        "unit": ""
+      },
+      {
+        "name": "Ajo",
+        "key": "ajo",
+        "qty": 0.5,
+        "unit": "diente"
+      },
+      {
+        "name": "Aceite de oliva",
+        "key": "aceite-de-oliva",
+        "qty": 1,
+        "unit": "cda"
+      },
+      {
+        "name": "Sal",
+        "key": "sal",
+        "qty": null,
+        "unit": "al gusto"
+      }
+    ],
+    "steps": [
+      "**Prepara el ajo y el limón.** Pela el diente de ajo. Exprime el limón y reserva el zumo.",
+      "**Tritura la base.** En una batidora o robot, añade los garbanzos cocidos, el tahini, el zumo de limón y el ajo. Tritura durante unos segundos, hasta que se integren.",
+      "**Ajusta la textura.** Con la batidora en marcha, añade el aceite de oliva poco a poco. Sigue triturando hasta obtener una textura cremosa.",
+      "**Sazona y prueba.** Añade sal al gusto. Prueba y ajusta si es necesario.",
+      "**Sirve.** Pásalo a un bol y, si quieres, termina con un chorrito extra de aceite de oliva."
+    ],
+    "storage": "- Conservar en la nevera en un recipiente hermético.\n- Aguanta bien entre 3 y 4 días.\n- Antes de servir, remover y añadir un poco de aceite de oliva si se ha espesado.",
+    "notes": [
+      "Se puede hacer sin tahini si no se encuentra; queda más suave y menos intenso.",
+      "Apto para batch cooking."
+    ]
+  },
+  {
+    "id": "gazpacho-andaluz",
+    "title": "Gazpacho andaluz",
+    "nationality": "española",
+    "time": 15,
+    "tags": [
+      "vegano",
+      "halal",
+      "kosher",
+      "sin_gluten",
+      "sin_lactosa"
+    ],
+    "baseServings": 1,
+    "ingredients": [
+      {
+        "name": "Tomate pera",
+        "key": "tomate-pera",
+        "qty": 250,
+        "unit": "g"
+      },
+      {
+        "name": "Pepino",
+        "key": "pepino",
+        "qty": 0.25,
+        "unit": "ud"
+      },
+      {
+        "name": "Pimiento verde",
+        "key": "pimiento-verde",
+        "qty": 0.25,
+        "unit": "ud"
+      },
+      {
+        "name": "Ajo",
+        "key": "ajo",
+        "qty": 0.25,
+        "unit": "diente"
+      },
+      {
+        "name": "Pan del día anterior",
+        "key": "pan-del-dia-anterior",
+        "qty": 15,
+        "unit": "g"
+      },
+      {
+        "name": "Aceite de oliva virgen extra",
+        "key": "aceite-de-oliva-virgen-extra",
+        "qty": 25,
+        "unit": "ml"
+      },
+      {
+        "name": "Vinagre de Jerez",
+        "key": "vinagre-de-jerez",
+        "qty": 0.5,
+        "unit": "cda"
+      },
+      {
+        "name": "Sal",
+        "key": "sal",
+        "qty": null,
+        "unit": "al gusto"
+      },
+      {
+        "name": "Agua fría",
+        "key": "agua-fria",
+        "qty": null,
+        "unit": "al gusto"
+      }
+    ],
+    "steps": [
+      "**Prepara las verduras.** Lava bien el tomate, el pepino y el pimiento. Pela el pepino si la piel es gruesa.",
+      "**Trocea.** Corta el tomate, el pepino y el pimiento en trozos medianos, lo justo para que se puedan triturar fácilmente.",
+      "**Añade el ajo y el pan.** Incorpora el ajo y el pan troceado a las verduras.",
+      "**Tritura.** Tritura todo hasta obtener una mezcla homogénea.",
+      "**Emulsiona.** Con la batidora en marcha, añade el aceite de oliva poco a poco para que el gazpacho quede ligado y cremoso.",
+      "**Ajusta el sabor.** Añade el vinagre y la sal. Si queda muy espeso, incorpora un poco de agua fría hasta alcanzar la textura deseada.",
+      "**Enfría.** Lleva a la nevera y deja enfriar antes de servir."
+    ],
+    "storage": "- Conservar en la nevera en un recipiente bien cerrado.\n- Aguanta hasta 48 horas.\n- Remover antes de servir.",
+    "notes": [
+      "Servir muy frío.",
+      "El pan debe ser preferiblemente del día anterior."
+    ]
+  },
+  {
+    "id": "curry-lentejas-rojas",
+    "title": "Curry de lentejas rojas",
+    "nationality": "india",
+    "time": 30,
+    "tags": [
+      "vegano",
+      "halal",
+      "sin_gluten",
+      "sin_lactosa"
+    ],
+    "baseServings": 1,
+    "ingredients": [
+      {
+        "name": "Lentejas rojas",
+        "key": "lentejas-rojas",
+        "qty": 80,
+        "unit": "g"
+      },
+      {
+        "name": "Cebolla",
+        "key": "cebolla",
+        "qty": 0.25,
+        "unit": "ud"
+      },
+      {
+        "name": "Ajo",
+        "key": "ajo",
+        "qty": 0.5,
+        "unit": "diente"
+      },
+      {
+        "name": "Jengibre fresco",
+        "key": "jengibre-fresco",
+        "qty": 5,
+        "unit": "g"
+      },
+      {
+        "name": "Tomate triturado",
+        "key": "tomate-triturado",
+        "qty": 100,
+        "unit": "g"
+      },
+      {
+        "name": "Leche de coco",
+        "key": "leche-de-coco",
+        "qty": 100,
+        "unit": "ml"
+      },
+      {
+        "name": "Aceite vegetal",
+        "key": "aceite-vegetal",
+        "qty": 1,
+        "unit": "cda"
+      },
+      {
+        "name": "Curry en polvo",
+        "key": "curry-en-polvo",
+        "qty": 1,
+        "unit": "cdita"
+      },
+      {
+        "name": "Comino molido",
+        "key": "comino-molido",
+        "qty": 0.5,
+        "unit": "cdita"
+      },
+      {
+        "name": "Cúrcuma",
+        "key": "curcuma",
+        "qty": 0.5,
+        "unit": "cdita"
+      },
+      {
+        "name": "Sal",
+        "key": "sal",
+        "qty": null,
+        "unit": "al gusto"
+      },
+      {
+        "name": "Agua",
+        "key": "agua",
+        "qty": null,
+        "unit": "al gusto"
+      }
+    ],
+    "steps": [
+      "**Prepara los aromáticos.** Pela y pica la cebolla en dados pequeños. Pela y ralla el ajo y el jengibre.",
+      "**Sofríe la base.** En una olla o sartén amplia, calienta el aceite a fuego medio y sofríe la cebolla hasta que esté blanda y ligeramente dorada.",
+      "**Añade las especias.** Incorpora el ajo, el jengibre, el curry, el comino y la cúrcuma. Remueve durante unos segundos, hasta que desprendan aroma.",
+      "**Cuece las lentejas.** Añade las lentejas rojas y el tomate triturado. Cubre con agua y deja cocinar a fuego medio.",
+      "**Añade la leche de coco.** Cuando las lentejas estén tiernas, incorpora la leche de coco y mezcla bien.",
+      "**Ajusta la textura.** Cocina unos minutos más, removiendo, hasta obtener un curry cremoso. Ajusta de sal si es necesario.",
+      "**Sirve.** Retira del fuego cuando tenga la consistencia deseada."
+    ],
+    "storage": "- Conservar en la nevera en un recipiente hermético.\n- Aguanta bien 3 días.\n- Al recalentar, añadir un poco de agua si se ha espesado.",
+    "notes": [
+      "Se puede acompañar con arroz basmati.",
+      "Ideal para batch cooking."
+    ]
+  },
+  {
+    "id": "tajine-pollo-limon",
+    "title": "Tajine de pollo con limón",
+    "nationality": "marroquí",
+    "time": 50,
+    "tags": [
+      "halal",
+      "sin_lactosa"
+    ],
+    "baseServings": 1,
+    "ingredients": [
+      {
+        "name": "Pollo (muslo o contramuslo)",
+        "key": "pollo-muslo-o-contramuslo",
+        "qty": 200,
+        "unit": "g"
+      },
+      {
+        "name": "Cebolla",
+        "key": "cebolla",
+        "qty": 0.5,
+        "unit": "ud"
+      },
+      {
+        "name": "Ajo",
+        "key": "ajo",
+        "qty": 1,
+        "unit": "diente"
+      },
+      {
+        "name": "Limón",
+        "key": "limon",
+        "qty": 0.5,
+        "unit": "ud"
+      },
+      {
+        "name": "Aceite de oliva",
+        "key": "aceite-de-oliva",
+        "qty": 1,
+        "unit": "cda"
+      },
+      {
+        "name": "Comino molido",
+        "key": "comino-molido",
+        "qty": 0.5,
+        "unit": "cdita"
+      },
+      {
+        "name": "Jengibre molido",
+        "key": "jengibre-molido",
+        "qty": 0.5,
+        "unit": "cdita"
+      },
+      {
+        "name": "Cúrcuma",
+        "key": "curcuma",
+        "qty": 0.5,
+        "unit": "cdita"
+      },
+      {
+        "name": "Pimienta negra",
+        "key": "pimienta-negra",
+        "qty": null,
+        "unit": "al gusto"
+      },
+      {
+        "name": "Sal",
+        "key": "sal",
+        "qty": null,
+        "unit": "al gusto"
+      },
+      {
+        "name": "Agua o caldo",
+        "key": "agua-o-caldo",
+        "qty": null,
+        "unit": "al gusto"
+      }
+    ],
+    "steps": [
+      "**Prepara los ingredientes.** Pela y corta la cebolla en juliana fina. Pela y machaca el ajo. Lava el limón y córtalo en rodajas finas.",
+      "**Dora el pollo.** En una cazuela o tajine, calienta el aceite y dora el pollo por todos los lados hasta que esté ligeramente dorado.",
+      "**Añade la base.** Incorpora la cebolla y el ajo al pollo. Cocina a fuego medio hasta que la cebolla esté blanda.",
+      "**Incorpora las especias.** Añade el comino, el jengibre, la cúrcuma, la pimienta y la sal. Remueve para que el pollo se impregne bien.",
+      "**Cuece a fuego lento.** Añade el limón y un poco de agua o caldo. Tapa y deja cocinar a fuego suave hasta que el pollo esté tierno.",
+      "**Reduce la salsa.** Destapa y deja cocinar unos minutos más, hasta que la salsa se reduzca ligeramente."
+    ],
+    "storage": "- Conservar en la nevera en un recipiente cerrado.\n- Aguanta 2–3 días.\n- Recalentar a fuego suave.",
+    "notes": [
+      "Se puede acompañar con cuscús o arroz.",
+      "El sabor mejora de un día para otro."
+    ]
+  },
+  {
+    "id": "tortilla-patatas",
+    "title": "Tortilla de patatas",
+    "nationality": "española",
+    "time": 25,
+    "tags": [
+      "vegetariano",
+      "sin_gluten"
+    ],
+    "baseServings": 1,
+    "ingredients": [
+      {
+        "name": "Patata",
+        "key": "patata",
+        "qty": 250,
+        "unit": "g"
+      },
+      {
+        "name": "Huevo",
+        "key": "huevo",
+        "qty": 2,
+        "unit": "ud"
+      },
+      {
+        "name": "Cebolla",
+        "key": "cebolla",
+        "qty": 50,
+        "unit": "g"
+      },
+      {
+        "name": "Aceite de oliva",
+        "key": "aceite-de-oliva",
+        "qty": null,
+        "unit": "al gusto"
+      },
+      {
+        "name": "Sal",
+        "key": "sal",
+        "qty": null,
+        "unit": "al gusto"
+      }
+    ],
+    "steps": [
+      "**Prepara las patatas y la cebolla.** Pela las patatas y córtalas en rodajas finas. Pela la cebolla y córtala en juliana.",
+      "**Fríe las patatas.** Calienta abundante aceite de oliva en una sartén a fuego medio y añade las patatas. Cocina despacio hasta que estén tiernas, sin dorarlas en exceso.",
+      "**Añade la cebolla.** Incorpora la cebolla a la sartén y cocina unos minutos más, hasta que esté blanda.",
+      "**Bate los huevos.** En un bol, bate los huevos con una pizca de sal.",
+      "**Mezcla.** Escurre bien las patatas y la cebolla y añádelas al bol con los huevos. Mezcla con cuidado.",
+      "**Cuaja la tortilla.** Vierte la mezcla en una sartén con un poco de aceite caliente. Cuaja a fuego medio por un lado, dale la vuelta y termina de cuajar al punto deseado."
+    ],
+    "storage": "- Conservar en la nevera en un recipiente cerrado.\n- Aguanta 2 días.\n- Sacar unos minutos antes de servir.",
+    "notes": [
+      "Se puede hacer sin cebolla.",
+      "Mejor con patatas harinosas."
+    ]
+  },
+  {
+    "id": "ensaladilla-rusa",
+    "title": "Ensaladilla rusa",
+    "nationality": "española",
+    "time": 30,
+    "tags": [
+      "sin_gluten"
+    ],
+    "baseServings": 1,
+    "ingredients": [
+      {
+        "name": "Patata",
+        "key": "patata",
+        "qty": 200,
+        "unit": "g"
+      },
+      {
+        "name": "Zanahoria",
+        "key": "zanahoria",
+        "qty": 50,
+        "unit": "g"
+      },
+      {
+        "name": "Huevo",
+        "key": "huevo",
+        "qty": 1,
+        "unit": "ud"
+      },
+      {
+        "name": "Atún en conserva",
+        "key": "atun-en-conserva",
+        "qty": 40,
+        "unit": "g"
+      },
+      {
+        "name": "Mayonesa",
+        "key": "mayonesa",
+        "qty": null,
+        "unit": "al gusto"
+      },
+      {
+        "name": "Sal",
+        "key": "sal",
+        "qty": null,
+        "unit": "al gusto"
+      }
+    ],
+    "steps": [
+      "**Cuece las verduras.** Pela las patatas y la zanahoria y cuécelas en agua con sal hasta que estén tiernas.",
+      "**Cuece el huevo.** Cuece el huevo en agua durante unos minutos hasta que esté duro.",
+      "**Trocea.** Deja templar y corta las patatas, la zanahoria y el huevo en dados pequeños.",
+      "**Mezcla.** En un bol, mezcla las verduras, el huevo y el atún desmenuzado.",
+      "**Añade la mayonesa.** Incorpora la mayonesa poco a poco hasta conseguir una mezcla cremosa.",
+      "**Ajusta de sal.** Prueba y rectifica si es necesario."
+    ],
+    "storage": "- Conservar en la nevera bien tapada.\n- Consumir en un máximo de 48 horas.",
+    "notes": [
+      "Se puede añadir aceitunas o guisantes.",
+      "Servir bien fría."
+    ]
+  },
+  {
+    "id": "salmorejo-cordobes",
+    "title": "Salmorejo cordobés",
+    "nationality": "española",
+    "time": 10,
+    "tags": [
+      "vegetariano",
+      "sin_gluten"
+    ],
+    "baseServings": 1,
+    "ingredients": [
+      {
+        "name": "Tomate pera",
+        "key": "tomate-pera",
+        "qty": 300,
+        "unit": "g"
+      },
+      {
+        "name": "Pan del día anterior",
+        "key": "pan-del-dia-anterior",
+        "qty": 40,
+        "unit": "g"
+      },
+      {
+        "name": "Aceite de oliva virgen extra",
+        "key": "aceite-de-oliva-virgen-extra",
+        "qty": 40,
+        "unit": "ml"
+      },
+      {
+        "name": "Ajo",
+        "key": "ajo",
+        "qty": 0.5,
+        "unit": "diente"
+      },
+      {
+        "name": "Sal",
+        "key": "sal",
+        "qty": null,
+        "unit": "al gusto"
+      }
+    ],
+    "steps": [
+      "**Prepara los ingredientes.** Lava los tomates y córtalos en trozos grandes.",
+      "**Tritura la base.** Tritura los tomates junto con el ajo hasta obtener una mezcla fina.",
+      "**Añade el pan.** Incorpora el pan troceado y deja que se empape unos minutos.",
+      "**Emulsiona.** Tritura de nuevo y añade el aceite poco a poco hasta obtener una textura espesa y cremosa.",
+      "**Ajusta.** Añade sal al gusto y vuelve a triturar brevemente."
+    ],
+    "storage": "- Conservar en la nevera bien tapado.\n- Aguanta 2–3 días.\n- Remover antes de servir.",
+    "notes": [
+      "Tradicionalmente se sirve con huevo duro y jamón.",
+      "Servir muy frío."
+    ]
+  },
+  {
+    "id": "lentejas-estofadas",
+    "title": "Lentejas estofadas",
+    "nationality": "española",
+    "time": 45,
+    "tags": [
+      "vegano",
+      "sin_gluten",
+      "sin_lactosa"
+    ],
+    "baseServings": 1,
+    "ingredients": [
+      {
+        "name": "Lentejas pardinas",
+        "key": "lentejas-pardinas",
+        "qty": 80,
+        "unit": "g"
+      },
+      {
+        "name": "Cebolla",
+        "key": "cebolla",
+        "qty": 0.25,
+        "unit": "ud"
+      },
+      {
+        "name": "Zanahoria",
+        "key": "zanahoria",
+        "qty": 50,
+        "unit": "g"
+      },
+      {
+        "name": "Pimiento verde",
+        "key": "pimiento-verde",
+        "qty": 0.25,
+        "unit": "ud"
+      },
+      {
+        "name": "Ajo",
+        "key": "ajo",
+        "qty": 0.5,
+        "unit": "diente"
+      },
+      {
+        "name": "Aceite de oliva",
+        "key": "aceite-de-oliva",
+        "qty": 1,
+        "unit": "cda"
+      },
+      {
+        "name": "Pimentón dulce",
+        "key": "pimenton-dulce",
+        "qty": 0.5,
+        "unit": "cdita"
+      },
+      {
+        "name": "Hoja de laurel",
+        "key": "hoja-de-laurel",
+        "qty": 1,
+        "unit": "ud"
+      },
+      {
+        "name": "Sal",
+        "key": "sal",
+        "qty": null,
+        "unit": "al gusto"
+      },
+      {
+        "name": "Agua",
+        "key": "agua",
+        "qty": null,
+        "unit": "al gusto"
+      }
+    ],
+    "steps": [
+      "**Prepara las verduras.** Pela y corta la cebolla, la zanahoria y el pimiento en dados pequeños. Pela y pica el ajo.",
+      "**Sofríe la base.** Calienta el aceite en una olla y sofríe las verduras a fuego medio hasta que estén blandas.",
+      "**Añade el pimentón.** Incorpora el pimentón, remueve rápidamente para que no se queme.",
+      "**Cuece las lentejas.** Añade las lentejas, el laurel y cubre con agua. Cocina a fuego medio hasta que estén tiernas.",
+      "**Ajusta.** Añade sal al final y deja reposar unos minutos antes de servir."
+    ],
+    "storage": "- Conservar en la nevera en un recipiente hermético.\n- Aguanta 3 días.\n- Al recalentar, añadir un poco de agua si espesan.",
+    "notes": [
+      "El sabor mejora de un día para otro.",
+      "Se pueden añadir especias al gusto."
+    ]
+  }
+]
