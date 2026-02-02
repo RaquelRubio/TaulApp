@@ -1,0 +1,46 @@
+{
+    "garbanzos-cocidos": {
+      "type": "pantry",
+      "stores": {
+        "mercadona": [
+          { "label": "Garbanzos cocidos Hacendado", "tier": "ES" },
+          { "label": "Garbanzos cocidos cocidos en tarro", "tier": "ES" }
+        ],
+        "lidl": [
+          { "label": "Garbanzos cocidos Freshona", "tier": "EU" }
+        ],
+        "dia": [
+          { "label": "Garbanzos cocidos DIA", "tier": "ES" }
+        ]
+      }
+    },
+  
+    "tahini": {
+      "type": "pantry",
+      "stores": {
+        "mercadona": [
+          { "label": "Tahini Hacendado", "tier": "ES" }
+        ],
+        "lidl": [
+          { "label": "Tahini Deluxe", "tier": "EU" }
+        ]
+      }
+    },
+  
+    "limon": {
+      "type": "produce",
+      "genericLocalLabel": "Tu frutería de barrio",
+      "stores": {
+        "mercadona": [
+          { "label": "Limón a granel", "tier": "ES" }
+        ],
+        "lidl": [
+          { "label": "Limón a granel", "tier": "ES" }
+        ],
+        "dia": [
+          { "label": "Limón a granel", "tier": "ES" }
+        ]
+      }
+    }
+  }
+  
