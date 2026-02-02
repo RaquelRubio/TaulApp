@@ -72,7 +72,7 @@ export default function Home() {
   const [shareUrl, setShareUrl] = useState("");
   const shareRef = useRef<HTMLDivElement>(null);
   const [randomKey, setRandomKey] = useState(0);
-  const [recipes, setRecipes] = useState([]);
+  const [recipes, setRecipes] = useState<any[]>([]);
   
 useEffect(() => {
   fetch("/recipes.json", { cache: "no-store" })
