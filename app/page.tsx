@@ -3,7 +3,6 @@
 import { useMemo, useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import recipes from "./data/recipes.json";
 import { getFavorites, toggleFavorite } from "./lib/favorites";
 import { Button } from "./components/ui/button";
 import { Card, CardContent } from "./components/ui/card";
@@ -73,6 +72,14 @@ export default function Home() {
   const [shareUrl, setShareUrl] = useState("");
   const shareRef = useRef<HTMLDivElement>(null);
   const [randomKey, setRandomKey] = useState(0);
+  const [recipes, setRecipes] = useState([]);
+  
+useEffect(() => {
+  fetch("/recipes.json", { cache: "no-store" })
+    .then((res) => res.json())
+    .then((data) => setRecipes(data));
+}, []);
+
 
   const [filters, setFilters] = useState({
     vegano: false,
