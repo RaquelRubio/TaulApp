@@ -104,11 +104,9 @@ export default function FavoritosPage() {
                     </Button>
                   )}
                   <CardContent className="p-4">
-                    <div className="flex items-start justify-between gap-2">
-                      <h3 className="text-lg font-bold text-foreground pr-6">{title}</h3>
-                      <span className="shrink-0 text-lg" aria-hidden>{flag}</span>
-                    </div>
+                    <h3 className="text-lg font-bold text-foreground pr-10">{title}</h3>
                     <p className="text-sm text-foreground mt-1 flex items-center gap-1.5">
+                      <span className="shrink-0 text-base" aria-hidden>{flag}</span>
                       <Clock className="h-4 w-4 shrink-0 text-muted-foreground" aria-hidden />
                       <span>{time !== "—" ? `${time} min` : "—"}</span>
                     </p>
