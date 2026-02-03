@@ -3,6 +3,7 @@
 import { useMemo, useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import Image from "next/image";
+import recipes from "./data/recipes.json";
 import { getFavorites, toggleFavorite } from "./lib/favorites";
 import { Button } from "./components/ui/button";
 import { Card, CardContent } from "./components/ui/card";
@@ -72,14 +73,6 @@ export default function Home() {
   const [shareUrl, setShareUrl] = useState("");
   const shareRef = useRef<HTMLDivElement>(null);
   const [randomKey, setRandomKey] = useState(0);
-  const [recipes, setRecipes] = useState<any[]>([]);
-  
-useEffect(() => {
-  fetch("/recipes.json", { cache: "no-store" })
-    .then((res) => res.json())
-    .then((data) => setRecipes(data));
-}, []);
-
 
   const [filters, setFilters] = useState({
     vegano: false,
@@ -109,19 +102,32 @@ useEffect(() => {
   }, [shareOpen]);
 
   const filtered = useMemo(() => {
-    // Excluir entradas de plantilla / "nueva receta" (id con ** o título placeholder)
-    let list = recipes.filter(
-      (r: { id: string; title: string }) => !r.id.includes("**") && r.title !== "(Nueva receta)"
+    type Recipe = { id: string; title?: string; tags?: string[]; nationality?: string; time?: number };
+    const all = recipes as Recipe[];
+    // Base: excluir solo plantillas (id con ** o título placeholder)
+    const baseList = all.filter(
+      (r) => !r.id.includes("**") && (r.title ?? "") !== "(Nueva receta)"
     );
 
     const activeFilters = Object.entries(filters).filter(([, v]) => v).map(([k]) => k);
-    if (activeFilters.length > 0) {
-      list = list.filter((r) => r.tags.includes && activeFilters.every((f) => r.tags.includes(f)));
+    const hasSearch = searchQuery.trim().length > 0;
+
+    // Sin ningún filtro (Todos + sin opciones alimentarias + sin búsqueda) → siempre todas las recetas
+    if (nationality === "todas" && activeFilters.length === 0 && !hasSearch) {
+      return baseList;
     }
 
-    if (searchQuery.trim()) {
+    let list = baseList;
+
+    if (activeFilters.length > 0) {
+      list = list.filter(
+        (r) => Array.isArray(r.tags) && activeFilters.every((f) => r.tags!.includes(f))
+      );
+    }
+
+    if (hasSearch) {
       const q = searchQuery.toLowerCase();
-      list = list.filter((r) => r.title.toLowerCase().includes(q));
+      list = list.filter((r) => (r.title ?? "").toLowerCase().includes(q));
     }
 
     if (nationality === "aleatorio") {
@@ -132,7 +138,7 @@ useEffect(() => {
 
     if (nationality !== "todas") {
       const normFilter = normalizeNationality(nationality);
-      list = list.filter((r) => normalizeNationality(r.nationality) === normFilter);
+      list = list.filter((r) => normalizeNationality(r.nationality ?? "") === normFilter);
     }
 
     return list;
