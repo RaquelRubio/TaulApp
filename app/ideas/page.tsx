@@ -18,11 +18,16 @@ export default function IdeasPage() {
     const terms = q.split(/[\s,]+/).filter(Boolean);
     if (terms.length === 0) return [];
 
-    return (recipes as any[]).filter((r) =>
+    const list = (recipes as any[]).filter(
+      (r) => !r.id?.includes("**") && (r.title ?? "") !== "(Nueva receta)"
+    );
+    return list.filter((r) =>
       terms.some((term) =>
-        (r.ingredients ?? []).some((ing: any) =>
-          String(ing.item ?? "").toLowerCase().includes(term)
-        )
+        (r.ingredients ?? []).some((ing: any) => {
+          const name = String(ing.name ?? "").toLowerCase();
+          const key = String(ing.key ?? "").toLowerCase();
+          return name.includes(term) || key.includes(term);
+        })
       )
     );
   }, [query]);
@@ -106,9 +111,9 @@ export default function IdeasPage() {
                   className="block no-underline text-inherit"
                 >
                   <CardContent className="p-4">
-                    <div className="font-bold text-foreground">{r.name}</div>
+                    <div className="font-bold text-foreground">{r.title ?? r.name ?? r.id}</div>
                     <div className="text-xs text-muted-foreground mt-0.5">
-                      {r.time_minutes} min
+                      {typeof r.time === "number" ? r.time : (r.time_minutes ?? "—")} min
                     </div>
                   </CardContent>
                 </Link>
