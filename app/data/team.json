@@ -1,0 +1,16 @@
+[
+  {
+    "id": "noemi",
+    "name": "Cocina con Noe",
+    "image": "/team/noemi.jpg",
+    "bio": "Cocina de mercado y de aprovechamiento. Le gustan las lentejas, el pan y que sobre para el día siguiente.",
+    "recipeIds": ["lentejas-estofadas"]
+  },
+  {
+    "id": "yousef-nasser",
+    "name": "Yousef Nasser",
+    "emoji": "👨‍🍳",
+    "bio": "Hombre palestino que comparte la cocina de su tierra: Fattouch, Mujaddara y Kanafeh. Recetas tradicionales para acercar sabores y memoria.",
+    "recipeIds": ["fattouch", "mujaddara", "kanafeh"]
+  }
+]

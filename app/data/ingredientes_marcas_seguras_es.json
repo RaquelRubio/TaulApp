@@ -1,0 +1,402 @@
+[
+  {
+    "ingredient": "Aceite de oliva",
+    "options": [
+      {
+        "brand_origin": "Aceites Abril — Galicia (España)",
+        "product": "Aceite de oliva"      },
+      {
+        "brand_origin": "Oleoestepa (cooperativa) — Andalucía (España)",
+        "product": "Aceite de oliva / virgen extra (según referencia)"      },
+      {
+        "brand_origin": "Almazara o cooperativa local — España",
+        "product": "Aceite de oliva"      }
+    ]
+  },
+  {
+    "ingredient": "Aceite de oliva virgen extra",
+    "options": [
+      {
+        "brand_origin": "Oleoestepa (cooperativa) — Andalucía (España)",
+        "product": "AOVE (DOP Estepa)"      },
+      {
+        "brand_origin": "Aceites Abril — Galicia (España)",
+        "product": "AOVE"      },
+      {
+        "brand_origin": "Almazara o cooperativa local — España",
+        "product": "AOVE temprano / de cosecha"      }
+    ]
+  },
+  {
+    "ingredient": "Aceite vegetal",
+    "note": "No incluyo marcas envasadas porque es difícil asegurar origen/mezclas sin revisar etiqueta y propiedad. Opción segura: usar aceite de oliva suave de almazara/cooperativa española.",
+    "options": [
+      {
+        "brand_origin": "Almazara o cooperativa local — España",
+        "product": "Aceite de oliva suave (alternativa al vegetal)"      }
+    ]
+  },
+  {
+    "ingredient": "Agua",
+    "options": [
+      {
+        "brand_origin": "Bezoya (Calidad Pascual) — Segovia (España)",
+        "product": "Agua mineral natural"      },
+      {
+        "brand_origin": "Cabreiroá (Hijos de Rivera) — Ourense (España)",
+        "product": "Agua mineral natural"      },
+      {
+        "brand_origin": "Aguas de Mondariz (Vichy Catalan) — Pontevedra (España)",
+        "product": "Agua mineral natural"      }
+    ]
+  },
+  {
+    "ingredient": "Agua fría",
+    "options": [
+      {
+        "brand_origin": "Bezoya (Calidad Pascual) — Segovia (España)",
+        "product": "Agua mineral natural"      },
+      {
+        "brand_origin": "Cabreiroá (Hijos de Rivera) — Ourense (España)",
+        "product": "Agua mineral natural"      },
+      {
+        "brand_origin": "Aguas de Mondariz (Vichy Catalan) — Pontevedra (España)",
+        "product": "Agua mineral natural"      }
+    ]
+  },
+  {
+    "ingredient": "Agua o caldo",
+    "options": [
+      {
+        "brand_origin": "Tu carnicería de confianza — España",
+        "product": "Caldo casero"      },
+      {
+        "brand_origin": "Tu carnicería de confianza (Halal) — España",
+        "product": "Caldo casero halal"      },
+      {
+        "brand_origin": "Tu carnicería de confianza (Kosher) — España",
+        "product": "Caldo casero kosher"      },
+      {
+        "brand_origin": "Tu casa — España",
+        "product": "Caldo casero (aprovechamiento)"      }
+    ]
+  },
+  {
+    "ingredient": "Ajo",
+    "options": [
+      {
+        "brand_origin": "La frutería de tu barrio — origen España",
+        "product": "Ajo fresco"      },
+      {
+        "brand_origin": "Mercado municipal — origen España",
+        "product": "Ajo fresco"      }
+    ]
+  },
+  {
+    "ingredient": "Atún en conserva",
+    "options": [
+      {
+        "brand_origin": "Conservas Ortiz — Ondarroa (España)",
+        "product": "Atún/bonito en conserva"      },
+      {
+        "brand_origin": "Conservera local (artesana) — España",
+        "product": "Atún/bonito en conserva"      }
+    ]
+  },
+  {
+    "ingredient": "Cebolla",
+    "options": [
+      {
+        "brand_origin": "La frutería de tu barrio — origen España",
+        "product": "Cebolla"      },
+      {
+        "brand_origin": "Mercado municipal — origen España",
+        "product": "Cebolla"      }
+    ]
+  },
+  {
+    "ingredient": "Comino molido",
+    "options": [
+      {
+        "brand_origin": "Carmencita — Novelda/Alicante (España)",
+        "product": "Comino molido"      },
+      {
+        "brand_origin": "Herbolario o tienda a granel — España",
+        "product": "Comino molido a granel"      }
+    ]
+  },
+  {
+    "ingredient": "Curry en polvo",
+    "options": [
+      {
+        "brand_origin": "Carmencita — Novelda/Alicante (España)",
+        "product": "Curry en polvo"      },
+      {
+        "brand_origin": "Herbolario o tienda a granel — España",
+        "product": "Curry a granel"      }
+    ]
+  },
+  {
+    "ingredient": "Cúrcuma",
+    "options": [
+      {
+        "brand_origin": "Carmencita — Novelda/Alicante (España)",
+        "product": "Cúrcuma molida"      },
+      {
+        "brand_origin": "Herbolario o tienda a granel — España",
+        "product": "Cúrcuma a granel"      }
+    ]
+  },
+  {
+    "ingredient": "Garbanzos cocidos",
+    "options": [
+      {
+        "brand_origin": "Legumbres Luengo — León (España)",
+        "product": "Garbanzos cocidos (frasco)"      },
+      {
+        "brand_origin": "Conservas artesanas locales — España",
+        "product": "Garbanzos cocidos (frasco)"      }
+    ]
+  },
+  {
+    "ingredient": "Hoja de laurel",
+    "options": [
+      {
+        "brand_origin": "Carmencita — Novelda/Alicante (España)",
+        "product": "Laurel"      },
+      {
+        "brand_origin": "Herbolario o tienda a granel — España",
+        "product": "Laurel a granel"      }
+    ]
+  },
+  {
+    "ingredient": "Huevo",
+    "options": [
+      {
+        "brand_origin": "Mercado municipal — origen España",
+        "product": "Huevos"      },
+      {
+        "brand_origin": "Granja local — España",
+        "product": "Huevos frescos"      }
+    ]
+  },
+  {
+    "ingredient": "Jengibre fresco",
+    "note": "Suele ser importado; opción segura es comprar en comercio local y revisar origen en etiqueta.",
+    "options": [
+      {
+        "brand_origin": "La frutería de tu barrio — (origen según etiqueta)",
+        "product": "Jengibre fresco"      }
+    ]
+  },
+  {
+    "ingredient": "Jengibre molido",
+    "options": [
+      {
+        "brand_origin": "Carmencita — Novelda/Alicante (España)",
+        "product": "Jengibre molido"      },
+      {
+        "brand_origin": "Herbolario o tienda a granel — España",
+        "product": "Jengibre molido a granel"      }
+    ]
+  },
+  {
+    "ingredient": "Leche de coco",
+    "note": "No incluyo marcas porque no he podido verificar una marca española 'segura' (propiedad y envasado) solo con fuentes fiables en esta pasada. Alternativa segura: nata vegetal local.",
+    "options": [
+      {
+        "brand_origin": "Tienda de barrio — España",
+        "product": "Nata vegetal (sustituto en recetas)"      }
+    ]
+  },
+  {
+    "ingredient": "Lentejas pardinas",
+    "options": [
+      {
+        "brand_origin": "Legumbres Luengo — León (España)",
+        "product": "Lenteja pardina (seca o cocida)"      },
+      {
+        "brand_origin": "Tienda a granel / cooperativa local — España",
+        "product": "Lenteja pardina"      }
+    ]
+  },
+  {
+    "ingredient": "Lentejas rojas",
+    "note": "Normalmente importadas; no puedo garantizar origen España/Europa sin revisar lote/etiqueta.",
+    "options": [
+      {
+        "brand_origin": "Tienda a granel — España",
+        "product": "Lenteja roja (ver origen en saco)"      }
+    ]
+  },
+  {
+    "ingredient": "Limón",
+    "options": [
+      {
+        "brand_origin": "La frutería de tu barrio — origen España",
+        "product": "Limón"      },
+      {
+        "brand_origin": "Mercado municipal — origen España",
+        "product": "Limón"      }
+    ]
+  },
+  {
+    "ingredient": "Mayonesa",
+    "options": [
+      {
+        "brand_origin": "Tu casa — España",
+        "product": "Mayonesa casera"      },
+      {
+        "brand_origin": "Bar/obrador local — España",
+        "product": "Mayonesa fresca"      }
+    ]
+  },
+  {
+    "ingredient": "Pan",
+    "options": [
+      {
+        "brand_origin": "La panadería cercana — tu barrio (España)",
+        "product": "Pan"      },
+      {
+        "brand_origin": "Obrador artesanal — tu ciudad (España)",
+        "product": "Pan rústico"      }
+    ]
+  },
+  {
+    "ingredient": "Patata",
+    "options": [
+      {
+        "brand_origin": "La frutería de tu barrio — origen España",
+        "product": "Patata"      },
+      {
+        "brand_origin": "Mercado municipal — origen España",
+        "product": "Patata"      }
+    ]
+  },
+  {
+    "ingredient": "Pepino",
+    "options": [
+      {
+        "brand_origin": "La frutería de tu barrio — origen España",
+        "product": "Pepino"      },
+      {
+        "brand_origin": "Mercado municipal — origen España",
+        "product": "Pepino"      }
+    ]
+  },
+  {
+    "ingredient": "Pimentón dulce",
+    "options": [
+      {
+        "brand_origin": "Carmencita — Novelda/Alicante (España)",
+        "product": "Pimentón dulce"      },
+      {
+        "brand_origin": "Pimentón DOP (La Vera u otra DOP española) — España",
+        "product": "Pimentón dulce"      }
+    ]
+  },
+  {
+    "ingredient": "Pimiento verde",
+    "options": [
+      {
+        "brand_origin": "La frutería de tu barrio — origen España",
+        "product": "Pimiento verde"      },
+      {
+        "brand_origin": "Mercado municipal — origen España",
+        "product": "Pimiento verde"      }
+    ]
+  },
+  {
+    "ingredient": "Pimienta negra",
+    "options": [
+      {
+        "brand_origin": "Carmencita — Novelda/Alicante (España)",
+        "product": "Pimienta negra"      },
+      {
+        "brand_origin": "Herbolario o tienda a granel — España",
+        "product": "Pimienta negra a granel"      }
+    ]
+  },
+  {
+    "ingredient": "Pollo (muslo o contramuslo)",
+    "options": [
+      {
+        "brand_origin": "Tu carnicería de confianza — origen España",
+        "product": "Muslo/contramuslo"      },
+      {
+        "brand_origin": "Tu carnicería de confianza (Halal) — origen España",
+        "product": "Muslo/contramuslo halal"      },
+      {
+        "brand_origin": "Tu carnicería de confianza (Kosher) — origen España",
+        "product": "Pollo kosher (disponibilidad variable)"      }
+    ]
+  },
+  {
+    "ingredient": "Sal",
+    "options": [
+      {
+        "brand_origin": "Salinas de Ibiza (Salinera Española) — Baleares (España)",
+        "product": "Sal marina"      },
+      {
+        "brand_origin": "Sal de Añana — Álava (España)",
+        "product": "Sal"      }
+    ]
+  },
+  {
+    "ingredient": "Tahini",
+    "note": "Elaborado/envasado en España; el sésamo suele ser importado (revisar lote si necesitas origen UE).",
+    "options": [
+      {
+        "brand_origin": "Bionsan — Tarragona (España)",
+        "product": "Tahini"      },
+      {
+        "brand_origin": "Productor artesanal / herbolario local — España",
+        "product": "Tahini (ver origen del sésamo)"      }
+    ]
+  },
+  {
+    "ingredient": "Tomate pera",
+    "options": [
+      {
+        "brand_origin": "La frutería de tu barrio — origen España",
+        "product": "Tomate pera"      },
+      {
+        "brand_origin": "Mercado municipal — origen España",
+        "product": "Tomate pera"      }
+    ]
+  },
+  {
+    "ingredient": "Tomate triturado",
+    "note": "Para máxima seguridad sin multinacionales: conserva artesana/local o cooperativa española (revisar etiqueta de la empresa).",
+    "options": [
+      {
+        "brand_origin": "Conservas artesanas locales — España",
+        "product": "Tomate triturado (bote/lata)"      },
+      {
+        "brand_origin": "Cooperativa agrícola local — España",
+        "product": "Tomate triturado (bote/lata)"      }
+    ]
+  },
+  {
+    "ingredient": "Vinagre de Jerez",
+    "options": [
+      {
+        "brand_origin": "Lustau (Grupo Caballero) — Jerez (España)",
+        "product": "Vinagre de Jerez"      },
+      {
+        "brand_origin": "Bodega local — Marco de Jerez (España)",
+        "product": "Vinagre de Jerez"      }
+    ]
+  },
+  {
+    "ingredient": "Zanahoria",
+    "options": [
+      {
+        "brand_origin": "La frutería de tu barrio — origen España",
+        "product": "Zanahoria"      },
+      {
+        "brand_origin": "Mercado municipal — origen España",
+        "product": "Zanahoria"      }
+    ]
+  }
+]
