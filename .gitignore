@@ -23,6 +23,9 @@
 # misc
 .DS_Store
 *.pem
+11.11.0
+next
+taulapp@0.1.0
 
 # debug
 npm-debug.log*
