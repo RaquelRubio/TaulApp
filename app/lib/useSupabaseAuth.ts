@@ -15,17 +15,16 @@ export function useSupabaseAuth() {
   useEffect(() => {
     let mounted = true;
 
-    supabase.auth
+    void supabase.auth
       .getUser()
-      .then(({ data }) => {
+      .then(({ data, error }) => {
         if (!mounted) return;
-        const u = data.user;
-        setUser(u ? { id: u.id, email: u.email ?? null } : null);
-        setLoading(false);
-      })
-      .catch(() => {
-        if (!mounted) return;
-        setUser(null);
+        if (error) {
+          setUser(null);
+        } else {
+          const u = data.user;
+          setUser(u ? { id: u.id, email: u.email ?? null } : null);
+        }
         setLoading(false);
       });
 

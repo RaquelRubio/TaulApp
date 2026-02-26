@@ -1,6 +1,6 @@
 "use client";
 
-import { FormEvent, useEffect, useState, useRef } from "react";
+import { FormEvent, Suspense, useEffect, useState, useRef } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { supabase } from "../lib/supabaseClient";
@@ -21,7 +21,7 @@ const DIET_TAGS: { id: DietTag; label: string }[] = [
   { id: "sin_lactosa", label: "Sin lactosa" },
 ];
 
-export default function CompartirPage() {
+function CompartirContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { user, loading } = useSupabaseAuth();
@@ -575,3 +575,14 @@ export default function CompartirPage() {
   );
 }
 
+export default function CompartirPage() {
+  return (
+    <Suspense fallback={
+      <main className="min-h-screen bg-background max-w-[520px] mx-auto flex flex-col items-center justify-center">
+        <p className="text-sm text-muted-foreground">Cargando...</p>
+      </main>
+    }>
+      <CompartirContent />
+    </Suspense>
+  );
+}

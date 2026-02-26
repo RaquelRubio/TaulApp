@@ -30,17 +30,17 @@ export default function MisRecetasPage() {
     }
 
     setLoadingRecipes(true);
-    supabase
+    void supabase
       .from("user_recipes")
       .select("id, title, time_minutes, created_at")
       .eq("author_id", user.id)
       .order("created_at", { ascending: false })
-      .then(({ data }) => {
-        setRecipes((data as UserRecipe[]) || []);
-        setLoadingRecipes(false);
-      })
-      .catch(() => {
-        setRecipes([]);
+      .then(({ data, error }) => {
+        if (error) {
+          setRecipes([]);
+        } else {
+          setRecipes((data as UserRecipe[]) || []);
+        }
         setLoadingRecipes(false);
       });
   }, [user, loading, router]);

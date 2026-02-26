@@ -1,13 +1,13 @@
 "use client";
 
-import { FormEvent, useState } from "react";
+import { FormEvent, Suspense, useState } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { supabase } from "../lib/supabaseClient";
 import { Input } from "../components/ui/input";
 import { Button } from "../components/ui/button";
 
-export default function RegistroPage() {
+function RegistroContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const redirectTo = searchParams.get("redirectTo") || "/";
@@ -149,3 +149,10 @@ export default function RegistroPage() {
   );
 }
 
+export default function RegistroPage() {
+  return (
+    <Suspense fallback={<main className="min-h-screen bg-background max-w-[520px] mx-auto flex items-center justify-center"><p className="text-sm text-muted-foreground">Cargando...</p></main>}>
+      <RegistroContent />
+    </Suspense>
+  );
+}

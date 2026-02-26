@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import Image from "next/image";
-import { use, useMemo, useState, useEffect, useRef } from "react";
+import { use, useMemo, useState, useEffect, useRef, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import recipes from "../../data/recipes.json";
 import teamData from "../../data/team.json";
@@ -185,7 +185,7 @@ function formatQuantity(value: number): string {
   return String(rounded);
 }
 
-export default function RecipePage({
+function RecipeContent({
   params,
 }: {
   params: Promise<{ id: string }>;
@@ -229,19 +229,14 @@ export default function RecipePage({
     }
     let cancelled = false;
     setLoadingDbRecipe(true);
-    supabase
+    void supabase
       .from("user_recipes")
       .select("*")
       .eq("id", id)
       .maybeSingle()
-      .then(({ data }) => {
+      .then(({ data, error }) => {
         if (cancelled) return;
-        setDbRecipe(data ?? null);
-        setLoadingDbRecipe(false);
-      })
-      .catch(() => {
-        if (cancelled) return;
-        setDbRecipe(null);
+        setDbRecipe(error ? null : data ?? null);
         setLoadingDbRecipe(false);
       });
     return () => {
@@ -597,7 +592,7 @@ export default function RecipePage({
             <button
               type="button"
               onClick={async () => {
-                if (!confirm("¿Eliminar esta receta? No se puede deshacer.")) return;
+                if (!user || !confirm("¿Eliminar esta receta? No se puede deshacer.")) return;
                 await supabase
                   .from("user_recipes")
                   .delete()
@@ -646,5 +641,17 @@ export default function RecipePage({
         })()}
       </div>
     </main>
+  );
+}
+
+export default function RecipePage({
+  params,
+}: {
+  params: Promise<{ id: string }>;
+}) {
+  return (
+    <Suspense fallback={<main className="min-h-screen bg-white max-w-[520px] mx-auto flex items-center justify-center"><p className="text-foreground">Cargando receta...</p></main>}>
+      <RecipeContent params={params} />
+    </Suspense>
   );
 }

@@ -148,15 +148,12 @@ export default function Home() {
   }, []);
 
   useEffect(() => {
-    supabase
+    void supabase
       .from("user_recipes")
       .select("id, title, nationality, time_minutes, tags, ingredients, image_path, image_paths")
       .order("created_at", { ascending: false })
-      .then(({ data }) => {
-        setCommunityRecipes(data || []);
-      })
-      .catch(() => {
-        setCommunityRecipes([]);
+      .then(({ data, error }) => {
+        setCommunityRecipes(error ? [] : data || []);
       });
   }, []);
 
