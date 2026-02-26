@@ -54,13 +54,18 @@ export default function CompartirPage() {
   useEffect(() => {
     if (!user || !editId) return;
     setLoadingEdit(true);
-    supabase
+    void supabase
       .from("user_recipes")
       .select("*")
       .eq("id", editId)
       .eq("author_id", user.id)
       .maybeSingle()
-      .then(({ data }) => {
+      .then(({ data, error }) => {
+        if (error) {
+          setError("No se pudo cargar la receta.");
+          setLoadingEdit(false);
+          return;
+        }
         if (!data) {
           setError("No tienes permiso para editar esta receta.");
           setLoadingEdit(false);
@@ -84,10 +89,6 @@ export default function CompartirPage() {
         } else if (r.image_path?.trim()) {
           setExistingImagePaths([r.image_path.trim()]);
         }
-        setLoadingEdit(false);
-      })
-      .catch(() => {
-        setError("No se pudo cargar la receta.");
         setLoadingEdit(false);
       });
   }, [user, editId]);
