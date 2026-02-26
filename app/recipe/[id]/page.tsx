@@ -7,6 +7,10 @@ import { useSearchParams } from "next/navigation";
 import recipes from "../../data/recipes.json";
 import teamData from "../../data/team.json";
 import { Copy, MessageCircle } from "lucide-react";
+import { supabase } from "../../lib/supabaseClient";
+import { useSupabaseAuth } from "../../lib/useSupabaseAuth";
+import { getRecipeImageUrl, getRecipeImageUrls } from "../../lib/recipeImages";
+import { RecipeImageCarousel } from "../../components/RecipeImageCarousel";
 
 type TeamMember = { id: string; name: string; image?: string; bio: string; recipeIds: string[] };
 const team = teamData as TeamMember[];
@@ -196,6 +200,9 @@ export default function RecipePage({
   const [rotatedRecommendations, setRotatedRecommendations] = useState<Record<string, string>>({});
   const [authorImageFailed, setAuthorImageFailed] = useState(false);
   const shareRef = useRef<HTMLDivElement>(null);
+  const [dbRecipe, setDbRecipe] = useState<any | null>(null);
+  const [loadingDbRecipe, setLoadingDbRecipe] = useState(false);
+  const { user } = useSupabaseAuth();
 
   useEffect(() => {
     if (typeof window !== "undefined") setShareUrl(window.location.href);
@@ -210,9 +217,39 @@ export default function RecipePage({
     return () => document.removeEventListener("click", close);
   }, [shareOpen]);
 
-  const recipe = useMemo(() => {
+  const staticRecipe = useMemo(() => {
     return (recipes as any[]).find((r) => r.id === id) ?? null;
   }, [id]);
+
+  useEffect(() => {
+    if (staticRecipe) {
+      setDbRecipe(null);
+      setLoadingDbRecipe(false);
+      return;
+    }
+    let cancelled = false;
+    setLoadingDbRecipe(true);
+    supabase
+      .from("user_recipes")
+      .select("*")
+      .eq("id", id)
+      .maybeSingle()
+      .then(({ data }) => {
+        if (cancelled) return;
+        setDbRecipe(data ?? null);
+        setLoadingDbRecipe(false);
+      })
+      .catch(() => {
+        if (cancelled) return;
+        setDbRecipe(null);
+        setLoadingDbRecipe(false);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [id, staticRecipe]);
+
+  const recipe = staticRecipe ?? dbRecipe;
 
   useEffect(() => {
     if (!recipe?.ingredients) return;
@@ -234,16 +271,22 @@ export default function RecipePage({
   if (!recipe) {
     return (
       <main className="min-h-screen bg-white font-sans max-w-[520px] mx-auto px-4 py-6">
-        <p className="text-foreground">No encuentro esta receta.</p>
-        <Link href="/" className="text-primary underline">
-          Volver
-        </Link>
+        {loadingDbRecipe ? (
+          <p className="text-foreground">Buscando esta receta...</p>
+        ) : (
+          <>
+            <p className="text-foreground">No encuentro esta receta.</p>
+            <Link href="/" className="text-primary underline">
+              Volver
+            </Link>
+          </>
+        )}
       </main>
     );
   }
 
   const displayTags = (recipe.tags ?? []).filter((t: string) => DIET_TAGS.includes(t));
-  const servingsOptions = Array.isArray(recipe.servings) ? recipe.servings : [2, 4, 6];
+  const servingsOptions = Array.isArray(recipe.servings) ? recipe.servings : [1, 2, 4];
 
   const recipeTitle = recipe.title ?? (recipe as { name?: string }).name ?? recipe.id;
   const shareText = `Mira esta receta: ${recipeTitle}`;
@@ -347,18 +390,25 @@ export default function RecipePage({
         </div>
       )}
 
-      {/* Imagen */}
-      <div className="relative w-full aspect-[4/3] bg-muted overflow-hidden rounded-b-2xl">
-        <Image
-         src={`/${(recipe as { image?: string }).image ?? (RECIPE_IMAGE_OVERRIDES[recipe.id] ?? `${recipe.id}.jpeg`)}`}
-         alt={recipeTitle}
-         fill
-         className="object-cover"
-         sizes="(max-width: 520px) 100vw, 520px"
-         unoptimized
-        />
-
-      </div>
+      {/* Imagen o carrusel (máx. 6 fotos) */}
+      {(() => {
+        const imageUrls = getRecipeImageUrls(recipe as { image_path?: string; image_paths?: string[] });
+        if (imageUrls.length > 0) {
+          return <RecipeImageCarousel urls={imageUrls} alt={recipeTitle} />;
+        }
+        return (
+          <div className="relative w-full aspect-[4/3] bg-muted overflow-hidden rounded-b-2xl">
+            <Image
+              src={`/${(recipe as { image?: string }).image ?? (RECIPE_IMAGE_OVERRIDES[recipe.id] ?? `${recipe.id}.jpeg`)}`}
+              alt={recipeTitle}
+              fill
+              className="object-cover"
+              sizes="(max-width: 520px) 100vw, 520px"
+              unoptimized
+            />
+          </div>
+        );
+      })()}
 
       <div className="px-4 pb-8">
         {/* Título y metadata */}
@@ -535,7 +585,34 @@ export default function RecipePage({
           </section>
         )}
 
-        {/* Autor de la receta */}
+        {/* Editar / Eliminar (solo recetas propias de la comunidad) */}
+        {dbRecipe && user?.id === (recipe as { author_id?: string }).author_id && (
+          <section className="mt-6 pt-4 border-t border-border/60 flex flex-wrap gap-2">
+            <Link
+              href={`/compartir?editar=${recipe.id}`}
+              className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-medium bg-primary text-primary-foreground hover:opacity-90 no-underline"
+            >
+              Editar receta
+            </Link>
+            <button
+              type="button"
+              onClick={async () => {
+                if (!confirm("¿Eliminar esta receta? No se puede deshacer.")) return;
+                await supabase
+                  .from("user_recipes")
+                  .delete()
+                  .eq("id", recipe.id)
+                  .eq("author_id", user.id);
+                window.location.href = "/mis-recetas";
+              }}
+              className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-medium text-destructive border border-destructive hover:bg-destructive/10"
+            >
+              Eliminar receta
+            </button>
+          </section>
+        )}
+
+        {/* Autor de la receta (solo recetas del equipo) */}
         {(() => {
           const author = getAuthorByRecipeId(recipe.id);
           if (!author) return null;

@@ -9,15 +9,7 @@ import { Button } from "../components/ui/button";
 import { Star, Heart, Clock } from "lucide-react";
 import { cn } from "../lib/utils";
 
-const nationalityFlag: Record<string, string> = {
-  espanola: "🇪🇸",
-  española: "🇪🇸",
-  arabe: "🇲🇦",
-  india: "🇮🇳",
-  palestina: "🇵🇸",
-  marroqui: "🇲🇦",
-  marroquí: "🇲🇦",
-};
+import { getFlagForNationality } from "../data/countries";
 
 const dietaryTagStyle: Record<string, string> = {
   vegano: "bg-emerald-100 text-emerald-800",
@@ -75,7 +67,7 @@ export default function FavoritosPage() {
             const dietaryTags = (r.tags || []).filter((t: string) => dietaryLabel[t]);
             const showTags = dietaryTags.slice(0, 3);
             const extraCount = dietaryTags.length - 3;
-            const flag = nationalityFlag[r.nationality] || "🌍";
+            const flag = getFlagForNationality(r.nationality) || "🌍";
             const title = r.title ?? (r as { name?: string }).name ?? r.id;
             const time = typeof r.time === "number" ? r.time : (r as { time_minutes?: number }).time_minutes ?? "—";
 

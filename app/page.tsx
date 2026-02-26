@@ -9,8 +9,12 @@ import { Button } from "./components/ui/button";
 import { Card, CardContent } from "./components/ui/card";
 import { Checkbox } from "./components/ui/checkbox";
 import { Input } from "./components/ui/input";
-import { Star, Search, Share2, ChevronDown, Copy, MessageCircle, Clock, Users } from "lucide-react";
+import { Star, Search, ChevronDown, Copy, MessageCircle, Clock, Heart } from "lucide-react";
 import { cn } from "./lib/utils";
+import AccountMenu from "./components/AccountMenu";
+import { supabase } from "./lib/supabaseClient";
+import { getRecipeImageUrl, getRecipeImageUrls } from "./lib/recipeImages";
+import { getFlagForNationality, normalizeNationalityForFilter } from "./data/countries";
 
 type Nationality = "todas" | "aleatorio" | "espanola" | "española" | "arabe" | "india" | "palestina" | "marroqui" | "marroquí";
 
@@ -125,9 +129,6 @@ export default function Home() {
   const [mounted, setMounted] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [opcionesOpen, setOpcionesOpen] = useState(false);
-  const [shareOpen, setShareOpen] = useState(false);
-  const [shareUrl, setShareUrl] = useState("");
-  const shareRef = useRef<HTMLDivElement>(null);
   const [randomKey, setRandomKey] = useState(0);
 
   const [filters, setFilters] = useState({
@@ -139,31 +140,53 @@ export default function Home() {
     sin_gluten: false,
   });
 
+  const [communityRecipes, setCommunityRecipes] = useState<any[]>([]);
+
   useEffect(() => {
     setMounted(true);
     setFavIds(getFavorites());
   }, []);
 
   useEffect(() => {
-    if (typeof window !== "undefined") setShareUrl(window.location.origin);
+    supabase
+      .from("user_recipes")
+      .select("id, title, nationality, time_minutes, tags, ingredients, image_path, image_paths")
+      .order("created_at", { ascending: false })
+      .then(({ data }) => {
+        setCommunityRecipes(data || []);
+      })
+      .catch(() => {
+        setCommunityRecipes([]);
+      });
   }, []);
 
-  useEffect(() => {
-    if (!shareOpen) return;
-    const close = (e: MouseEvent) => {
-      if (shareRef.current && !shareRef.current.contains(e.target as Node)) setShareOpen(false);
-    };
-    document.addEventListener("click", close);
-    return () => document.removeEventListener("click", close);
-  }, [shareOpen]);
-
   const filtered = useMemo(() => {
-    type Recipe = { id: string; title?: string; tags?: string[]; nationality?: string; time?: number };
-    const all = recipes as Recipe[];
-    // Base: excluir solo plantillas (id con ** o título placeholder)
-    const baseList = all.filter(
+    type Recipe = {
+      id: string;
+      title?: string;
+      tags?: string[];
+      nationality?: string;
+      time?: number;
+      ingredients?: RecipeForFilter["ingredients"];
+    };
+
+    const staticRecipes = (recipes as Recipe[]).filter(
       (r) => !r.id.includes("**") && (r.title ?? "") !== "(Nueva receta)"
     );
+
+    const community = (communityRecipes as any[]).map((r) => ({
+      id: r.id as string,
+      title: (r.title as string) ?? null,
+      nationality: (r.nationality as string | null) ?? undefined,
+      time: (r.time_minutes as number | null) ?? undefined,
+      tags: (r.tags as string[] | null) ?? [],
+      ingredients: (r.ingredients as RecipeForFilter["ingredients"] | null) ?? [],
+      image_path: (r.image_path as string | null) ?? undefined,
+      image_paths: (r.image_paths as string[] | null) ?? undefined,
+    }));
+
+    const all: Recipe[] = [...staticRecipes, ...community];
+    const baseList = all;
 
     const activeFilters = Object.entries(filters).filter(([, v]) => v).map(([k]) => k);
     const hasSearch = searchQuery.trim().length > 0;
@@ -194,11 +217,13 @@ export default function Home() {
 
     if (nationality !== "todas") {
       const normFilter = normalizeNationality(nationality);
-      list = list.filter((r) => normalizeNationality(r.nationality ?? "") === normFilter);
+      list = list.filter(
+        (r) => normalizeNationalityForFilter(r.nationality) === normFilter || normalizeNationality(r.nationality ?? "") === normFilter
+      );
     }
 
     return list;
-  }, [nationality, filters, searchQuery, randomKey]);
+  }, [nationality, filters, searchQuery, randomKey, communityRecipes]);
 
   const chips: { key: Nationality; label: string }[] = [
     { key: "todas", label: "Todos" },
@@ -215,59 +240,15 @@ export default function Home() {
       {/* Header */}
       <header className="h-14 flex items-center justify-between px-4 border-b border-border/60 shrink-0">
         <h1 className="text-2xl font-bold text-primary">TaulApp</h1>
-        <div className="flex items-center gap-0.5">
+        <div className="flex items-center gap-1">
           <Link
             href="/nosotras"
             className="flex items-center justify-center w-10 h-10 rounded-full text-foreground hover:bg-muted"
             aria-label="Nosotras"
           >
-            <Users className="h-5 w-5" strokeWidth={1.5} />
+            <Heart className="h-5 w-5" strokeWidth={1.5} />
           </Link>
-          <div className="relative" ref={shareRef}>
-            <button
-              type="button"
-              onClick={() => setShareOpen((o) => !o)}
-              className="flex items-center justify-center w-10 h-10 rounded-full text-foreground hover:bg-muted"
-              aria-label="Compartir TaulApp"
-              aria-expanded={shareOpen}
-              aria-haspopup="true"
-            >
-              <Share2 className="h-5 w-5" strokeWidth={1.5} />
-            </button>
-          {shareOpen && (
-            <div className="absolute right-0 top-full mt-1 w-56 rounded-xl border border-border bg-card shadow-lg py-2 z-50">
-              <div className="px-3 py-2 border-b border-border/60">
-                <p className="text-xs text-muted-foreground">Compartir TaulApp</p>
-                <p className="text-xs truncate mt-0.5" title={shareUrl}>{shareUrl || "…"}</p>
-              </div>
-              <div className="grid gap-0.5 pt-1">
-                <button
-                  type="button"
-                  onClick={async () => {
-                    if (!shareUrl) return;
-                    await navigator.clipboard.writeText(shareUrl);
-                    setShareOpen(false);
-                    alert("Link copiado ✅");
-                  }}
-                  className="flex items-center gap-2 w-full px-3 py-2.5 text-left text-sm font-medium hover:bg-accent"
-                >
-                  <Copy className="h-4 w-4" />
-                  Copiar link
-                </button>
-                <a
-                  href={shareUrl ? `https://wa.me/?text=${encodeURIComponent(`Mira TaulApp: ${shareUrl}`)}` : "#"}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="flex items-center gap-2 w-full px-3 py-2.5 text-left text-sm font-medium hover:bg-accent no-underline text-foreground"
-                  onClick={() => setShareOpen(false)}
-                >
-                  <MessageCircle className="h-4 w-4" />
-                  Compartir por WhatsApp
-                </a>
-              </div>
-            </div>
-          )}
-          </div>
+          <AccountMenu />
         </div>
       </header>
 
@@ -360,7 +341,7 @@ export default function Home() {
           const dietaryTags = (r.tags || []).filter((t: string) => dietaryLabel[t]);
           const showTags = dietaryTags.slice(0, 3);
           const extraCount = dietaryTags.length - 3;
-          const flag = nationalityFlag[r.nationality as Nationality] || "🌍";
+          const flag = getFlagForNationality(r.nationality) || nationalityFlag[r.nationality as Nationality] || "🌍";
 
           return (
             <Card key={r.id} className="relative overflow-hidden rounded-2xl border shadow-sm">
@@ -368,16 +349,30 @@ export default function Home() {
                 href={`/recipe/${r.id}`}
                 className="block no-underline text-inherit"
               >
-             {/* Imagen de la receta (desde public) */}
+             {/* Imagen de la receta (comunidad: Supabase; estáticas: public) */}
 <div className="relative w-full aspect-[16/10] bg-muted">
-  <Image
-    src={`/${(r as { image?: string }).image ?? (RECIPE_IMAGE_OVERRIDES[r.id] ?? `${r.id}.jpeg`)}`}
-    alt={r.title ? String(r.title) : `Receta: ${r.id}`}
-    width={400}
-    height={250}
-    className="object-cover w-full h-full"
-    unoptimized
-  />
+  {(() => {
+    const urls = getRecipeImageUrls(r as { image_path?: string; image_paths?: string[] });
+    if (urls.length > 0) {
+      return (
+        <img
+          src={urls[0]}
+          alt={r.title ? String(r.title) : `Receta: ${r.id}`}
+          className="w-full h-full object-cover"
+        />
+      );
+    }
+    return (
+      <Image
+        src={`/${(r as { image?: string }).image ?? (RECIPE_IMAGE_OVERRIDES[r.id] ?? `${r.id}.jpeg`)}`}
+        alt={r.title ? String(r.title) : `Receta: ${r.id}`}
+        width={400}
+        height={250}
+        className="object-cover w-full h-full"
+        unoptimized
+      />
+    );
+  })()}
 </div>
 
                 {mounted && (
