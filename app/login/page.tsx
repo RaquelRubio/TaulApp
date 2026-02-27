@@ -3,6 +3,7 @@
 import { FormEvent, Suspense, useState } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
+import { Eye, EyeOff } from "lucide-react";
 import { supabase } from "../lib/supabaseClient";
 import { Input } from "../components/ui/input";
 import { Button } from "../components/ui/button";
@@ -14,12 +15,15 @@ function LoginContent() {
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [info, setInfo] = useState<string | null>(null);
 
   async function handleSubmit(e: FormEvent) {
     e.preventDefault();
     setError(null);
+    setInfo(null);
     setLoading(true);
     const { error } = await supabase.auth.signInWithPassword({
       email,
@@ -27,10 +31,50 @@ function LoginContent() {
     });
     setLoading(false);
     if (error) {
-      setError(error.message || "No se ha podido iniciar sesión.");
+      const rawMessage = (error.message || "").toLowerCase();
+      if (rawMessage.includes("invalid login credentials")) {
+        setError("El email o la contraseña no son correctos.");
+      } else if (rawMessage.includes("email not confirmed")) {
+        setError(
+          "Tu email todavía no está confirmado. Revisa tu bandeja de entrada y confirma tu cuenta para poder entrar."
+        );
+      } else if (rawMessage.includes("user not found")) {
+        setError("No hemos encontrado ninguna cuenta con ese email.");
+      } else {
+        setError("No se ha podido iniciar sesión. Inténtalo de nuevo en unos segundos.");
+      }
       return;
     }
     router.push(redirectTo);
+  }
+
+  async function handleResetPassword() {
+    if (!email) {
+      setError("Escribe tu email para poder enviarte el enlace de recuperación.");
+      return;
+    }
+
+    setError(null);
+    setInfo(null);
+
+    const origin =
+      typeof window !== "undefined" ? window.location.origin : "";
+    const redirectUrl = `${origin}/login`;
+
+    const { error } = await supabase.auth.resetPasswordForEmail(email, {
+      redirectTo: redirectUrl,
+    });
+
+    if (error) {
+      setError(
+        "No hemos podido enviar el email de recuperación. Revisa que el correo sea correcto o inténtalo más tarde."
+      );
+      return;
+    }
+
+    setInfo(
+      "Te hemos enviado un email para restablecer tu contraseña. Revisa tu bandeja de entrada (y la carpeta de spam)."
+    );
   }
 
   return (
@@ -66,23 +110,51 @@ function LoginContent() {
             />
           </div>
 
-          <div className="space-y-1.5">
+          <div className="space-y-1.5 max-w-xs">
             <label className="text-sm font-medium text-foreground">
               Contraseña
             </label>
-            <Input
-              type="password"
-              autoComplete="current-password"
-              required
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              placeholder="••••••••"
-            />
+            <div className="relative flex items-center">
+              <Input
+                type={showPassword ? "text" : "password"}
+                autoComplete="current-password"
+                required
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                placeholder="••••••••"
+                className="pr-10"
+              />
+              <button
+                type="button"
+                onClick={() => setShowPassword((prev) => !prev)}
+                className="absolute right-2 inline-flex items-center justify-center text-muted-foreground hover:text-foreground"
+                aria-label={showPassword ? "Ocultar contraseña" : "Mostrar contraseña"}
+              >
+                {showPassword ? (
+                  <EyeOff className="h-4 w-4" />
+                ) : (
+                  <Eye className="h-4 w-4" />
+                )}
+              </button>
+            </div>
           </div>
+
+          <button
+            type="button"
+            onClick={handleResetPassword}
+            className="text-sm text-primary underline underline-offset-2 hover:underline"
+          >
+            Olvidé mi contraseña
+          </button>
 
           {error && (
             <p className="text-sm text-destructive">
               {error}
+            </p>
+          )}
+          {info && (
+            <p className="text-sm text-foreground">
+              {info}
             </p>
           )}
 

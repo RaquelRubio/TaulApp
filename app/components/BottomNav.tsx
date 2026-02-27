@@ -2,13 +2,13 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Home, Lightbulb, Heart, UtensilsCrossed } from "lucide-react";
+import { Home, Lightbulb, Star, UtensilsCrossed } from "lucide-react";
 import { cn } from "../lib/utils";
 
 const tabs = [
   { href: "/", label: "Inicio", icon: Home },
   { href: "/ideas", label: "Ideas", icon: Lightbulb },
-  { href: "/favoritos", label: "Favoritos", icon: Heart },
+  { href: "/favoritos", label: "Favoritos", icon: Star },
   { href: "/ingredientes", label: "Ingredientes", icon: UtensilsCrossed },
 ];
 

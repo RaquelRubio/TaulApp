@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { LogIn, LogOut, User, Share2 } from "lucide-react";
+import { LogOut, User, Share2 } from "lucide-react";
 import { useState } from "react";
 import { supabase } from "../lib/supabaseClient";
 import { useSupabaseAuth } from "../lib/useSupabaseAuth";
@@ -26,7 +26,7 @@ export default function AccountMenu() {
         className="flex items-center justify-center w-9 h-9 rounded-full text-foreground hover:bg-muted no-underline"
         aria-label="Iniciar sesión"
       >
-        <LogIn className="h-5 w-5" strokeWidth={1.5} />
+        <User className="h-5 w-5" strokeWidth={1.5} />
       </Link>
     );
   }

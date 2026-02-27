@@ -32,7 +32,16 @@ function RegistroContent() {
 
     if (error) {
       setLoading(false);
-      setError(error.message || "No se ha podido crear la cuenta.");
+      const rawMessage = (error.message || "").toLowerCase();
+      if (rawMessage.includes("user already registered") || rawMessage.includes("user already exists")) {
+        setError("Ya existe una cuenta con ese email. Inicia sesión en lugar de crear una nueva.");
+      } else if (rawMessage.includes("password")) {
+        setError("La contraseña no cumple los requisitos mínimos. Prueba con una más larga o más segura.");
+      } else if (rawMessage.includes("email")) {
+        setError("El email no es válido. Revisa que esté bien escrito.");
+      } else {
+        setError("No se ha podido crear la cuenta. Inténtalo de nuevo en unos segundos.");
+      }
       return;
     }
 
