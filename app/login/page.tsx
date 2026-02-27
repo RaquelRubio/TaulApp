@@ -63,7 +63,17 @@ function LoginContent() {
 
     if (error) {
       console.error("resetPasswordForEmail error", error);
-      setError(error.message || "No hemos podido enviar el email de recuperación. Revisa que el correo sea correcto o inténtalo más tarde.");
+      const rawMessage = (error.message || "").toLowerCase();
+      if (rawMessage.includes("load failed")) {
+        setError(
+          "No hemos podido enviar el email de recuperación. Revisa tu conexión o inténtalo de nuevo en unos segundos."
+        );
+      } else {
+        setError(
+          error.message ||
+            "No hemos podido enviar el email de recuperación. Revisa que el correo sea correcto o inténtalo más tarde."
+        );
+      }
       return;
     }
 

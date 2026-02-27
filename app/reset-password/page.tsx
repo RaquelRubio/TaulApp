@@ -16,23 +16,44 @@ export default function ResetPasswordPage() {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    const {
-      data: { subscription },
-    } = supabase.auth.onAuthStateChange((event) => {
-      if (event === "PASSWORD_RECOVERY") {
-        setStatus("recovering");
-      }
-    });
+    async function exchangeCodeIfPresent() {
+      const href = window.location.href;
+      const url = new URL(href);
+      const code = url.searchParams.get("code");
 
-    return () => {
-      subscription.unsubscribe();
-    };
+      if (!code) {
+        setError("El enlace de recuperación no es válido o ha caducado.");
+        return;
+      }
+
+      setStatus("idle");
+      setError(null);
+
+      const { error } = await supabase.auth.exchangeCodeForSession(href);
+
+      if (error) {
+        setError(error.message || "No hemos podido validar el enlace de recuperación.");
+        return;
+      }
+
+      setStatus("recovering");
+    }
+
+    exchangeCodeIfPresent().catch((err) => {
+      console.error("exchangeCodeForSession error", err);
+      setError("No hemos podido validar el enlace de recuperación. Inténtalo de nuevo desde tu email.");
+    });
   }, []);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setError(null);
     setMessage(null);
+
+    if (status !== "recovering") {
+      setError("Primero abre el enlace de recuperación desde el email que te hemos enviado.");
+      return;
+    }
 
     if (!password || !confirmPassword) {
       setError("Rellena los dos campos de contraseña.");
@@ -108,7 +129,7 @@ export default function ResetPasswordPage() {
 
           <button
             type="submit"
-            disabled={status === "submitting"}
+            disabled={status !== "recovering" || status === "submitting"}
             className="w-full h-10 rounded-md bg-primary text-primary-foreground text-sm font-medium disabled:opacity-60 disabled:cursor-not-allowed"
           >
             {status === "submitting" ? "Guardando..." : "Guardar nueva contraseña"}
