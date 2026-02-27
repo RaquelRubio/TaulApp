@@ -1,6 +1,6 @@
 "use client";
 
-import { FormEvent, Suspense, useState } from "react";
+import { FormEvent, Suspense, useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Eye, EyeOff } from "lucide-react";
@@ -19,6 +19,25 @@ function LoginContent() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [info, setInfo] = useState<string | null>(null);
+  const [cooldown, setCooldown] = useState(0);
+
+  useEffect(() => {
+    if (cooldown <= 0) return;
+
+    const id = window.setInterval(() => {
+      setCooldown((prev) => {
+        if (prev <= 1) {
+          window.clearInterval(id);
+          return 0;
+        }
+        return prev - 1;
+      });
+    }, 1000);
+
+    return () => {
+      window.clearInterval(id);
+    };
+  }, [cooldown]);
 
   async function handleSubmit(e: FormEvent) {
     e.preventDefault();
@@ -80,6 +99,7 @@ function LoginContent() {
     setInfo(
       "Te hemos enviado un email para restablecer tu contraseña. Revisa tu bandeja de entrada (y la carpeta de spam)."
     );
+    setCooldown(60);
   }
 
   return (
@@ -147,9 +167,10 @@ function LoginContent() {
           <button
             type="button"
             onClick={handleResetPassword}
-            className="text-sm text-primary underline underline-offset-2 hover:underline"
+            className="text-sm text-primary underline underline-offset-2 hover:underline disabled:opacity-60 disabled:cursor-not-allowed"
+            disabled={cooldown > 0}
           >
-            Olvidé mi contraseña
+            {cooldown > 0 ? `Reenviar en ${cooldown}s` : "Olvidé mi contraseña"}
           </button>
 
           {error && (
