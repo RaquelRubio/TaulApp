@@ -62,9 +62,8 @@ function LoginContent() {
     });
 
     if (error) {
-      setError(
-        "No hemos podido enviar el email de recuperación. Revisa que el correo sea correcto o inténtalo más tarde."
-      );
+      console.error("resetPasswordForEmail error", error);
+      setError(error.message || "No hemos podido enviar el email de recuperación. Revisa que el correo sea correcto o inténtalo más tarde.");
       return;
     }
 
