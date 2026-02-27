@@ -58,7 +58,7 @@ function LoginContent() {
     setInfo(null);
 
     const { error } = await supabase.auth.resetPasswordForEmail(email, {
-      redirectTo: `${window.location.origin}/reset-password`,
+      redirectTo: "https://taulapp-v1.vercel.app/reset-password",
     });
 
     if (error) {
