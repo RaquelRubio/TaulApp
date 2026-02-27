@@ -16,33 +16,22 @@ export default function ResetPasswordPage() {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    async function exchangeCodeIfPresent() {
-      const href = window.location.href;
-      const url = new URL(href);
-      const code = url.searchParams.get("code");
+    // Supabase añade los tokens y type=recovery en el hash de la URL
+    const hash = window.location.hash.startsWith("#")
+      ? window.location.hash.slice(1)
+      : window.location.hash;
+    const params = new URLSearchParams(hash);
+    const type = params.get("type");
 
-      if (!code) {
-        setError("El enlace de recuperación no es válido o ha caducado.");
-        return;
-      }
-
-      setStatus("idle");
-      setError(null);
-
-      const { error } = await supabase.auth.exchangeCodeForSession(href);
-
-      if (error) {
-        setError(error.message || "No hemos podido validar el enlace de recuperación.");
-        return;
-      }
-
+    if (type === "recovery") {
       setStatus("recovering");
+      setError(null);
+    } else {
+      setStatus("idle");
+      setError(
+        "El enlace de recuperación no es válido o ha caducado. Abre directamente el enlace desde el email que te hemos enviado."
+      );
     }
-
-    exchangeCodeIfPresent().catch((err) => {
-      console.error("exchangeCodeForSession error", err);
-      setError("No hemos podido validar el enlace de recuperación. Inténtalo de nuevo desde tu email.");
-    });
   }, []);
 
   async function handleSubmit(e: React.FormEvent) {
@@ -129,7 +118,7 @@ export default function ResetPasswordPage() {
 
           <button
             type="submit"
-            disabled={status !== "recovering" || status === "submitting"}
+            disabled={status !== "recovering"}
             className="w-full h-10 rounded-md bg-primary text-primary-foreground text-sm font-medium disabled:opacity-60 disabled:cursor-not-allowed"
           >
             {status === "submitting" ? "Guardando..." : "Guardar nueva contraseña"}
