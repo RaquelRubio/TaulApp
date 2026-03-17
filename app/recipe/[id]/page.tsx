@@ -624,9 +624,9 @@ function RecipeContent({
                 // Si es la receta de la usuaria actual, usamos su emoji de perfil
                 const isCurrentUserAuthor =
                   !!user && user.id === (recipe as { author_id?: string | null }).author_id;
-                const meta = (user?.user_metadata ?? {}) as { avatar_emoji?: string | null };
+                const meta = (user as unknown as { user_metadata?: { avatar_emoji?: string | null } | null })?.user_metadata ?? {};
                 const avatarEmoji = isCurrentUserAuthor
-                  ? (meta.avatar_emoji || "🥦")
+                  ? ((meta as { avatar_emoji?: string | null }).avatar_emoji || "🥦")
                   : null;
 
                 const initial = safeName.charAt(0).toUpperCase() || "C";

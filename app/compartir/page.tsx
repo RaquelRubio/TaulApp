@@ -63,12 +63,13 @@ function CompartirContent() {
     }
 
     // 2) Soportar líneas tipo "200g de arroz redondo" o "200 g arroz redondo"
+    //    Sin grupos con nombre para máxima compatibilidad.
     const qtyUnitName =
-      /^(?<qty>\d+(?:[.,]\d+)?|\d+\/\d+)\s*(?<unit>g|gr|gramos|kg|ml|l|ud|uds|unidad(?:es)?|cda|cdas|cdita|cdta|taza|tazas)?\b(?:\s+de)?\s+(?<name>.+)$/i;
+      /^(\d+(?:[.,]\d+)?|\d+\/\d+)\s*(g|gr|gramos|kg|ml|l|ud|uds|unidad(?:es)?|cda|cdas|cdita|cdta|taza|tazas)?\b(?:\s+de)?\s+(.+)$/i;
     const m = raw.match(qtyUnitName);
-    if (m && m.groups?.name) {
-      const name = m.groups.name.trim();
-      const qtyRaw = m.groups.qty?.trim() ?? "";
+    if (m) {
+      const qtyRaw = (m[1] ?? "").trim();
+      const name = (m[3] ?? "").trim();
       let qty: number | null = null;
       if (qtyRaw.includes("/")) {
         const [a, b] = qtyRaw.split("/");
@@ -80,7 +81,7 @@ function CompartirContent() {
         qty = Number.isNaN(n) ? null : n;
       }
 
-      const unitRaw = (m.groups.unit ?? "").toLowerCase();
+      const unitRaw = (m[2] ?? "").toLowerCase();
       let unit: string | null = null;
       switch (unitRaw) {
         case "g":
@@ -132,10 +133,10 @@ function CompartirContent() {
       const left = dashSplit[0].trim();
       const right = dashSplit[1].trim();
       const m2 =
-        /^(?<qty>\d+(?:[.,]\d+)?|\d+\/\d+)\s*(?<unit>.*)$/i;
+        /^(\d+(?:[.,]\d+)?|\d+\/\d+)\s*(.*)$/i;
       const mRight = right.match(m2);
-      if (mRight && mRight.groups) {
-        const qtyRaw = mRight.groups.qty?.trim() ?? "";
+      if (mRight) {
+        const qtyRaw = (mRight[1] ?? "").trim();
         let qty: number | null = null;
         if (qtyRaw.includes("/")) {
           const [a, b] = qtyRaw.split("/");
@@ -146,7 +147,7 @@ function CompartirContent() {
           const n = Number.parseFloat(qtyRaw.replace(",", "."));
           qty = Number.isNaN(n) ? null : n;
         }
-        const unit = (mRight.groups.unit ?? "").trim() || null;
+        const unit = (mRight[2] ?? "").trim() || null;
         return {
           name: left,
           qty,

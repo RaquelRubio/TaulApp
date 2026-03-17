@@ -24,6 +24,7 @@ export default function AccountMenu() {
     let cancelled = false;
 
     async function loadDisplayName() {
+      if (!user) return;
       try {
         const [{ data: profileData }, { data: authData }] = await Promise.all([
           supabase
