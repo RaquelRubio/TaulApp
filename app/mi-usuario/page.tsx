@@ -16,6 +16,10 @@ type ProfileRow = {
 type UserMetadata = {
   avatar_path?: string | null;
   display_name?: string | null;
+  phone?: string | null;
+  bio?: string | null;
+  avatar_emoji?: string | null;
+  avatar_color?: string | null;
 };
 
 function MiUsuarioContent() {
@@ -25,6 +29,11 @@ function MiUsuarioContent() {
   const [displayName, setDisplayName] = useState("");
   const [email, setEmail] = useState("");
   const [avatarPath, setAvatarPath] = useState<string | null>(null);
+  const [phone, setPhone] = useState("");
+  const [bio, setBio] = useState("");
+  const [emoji, setEmoji] = useState("🥦");
+  const [avatarColor, setAvatarColor] = useState<string>("#FDE68A");
+  const [loadedEmoji, setLoadedEmoji] = useState("🥦");
 
   const [loadingProfile, setLoadingProfile] = useState(true);
   const [profileError, setProfileError] = useState<string | null>(null);
@@ -50,6 +59,7 @@ function MiUsuarioContent() {
       return;
     }
 
+    const currentUser = user;
     let cancelled = false;
 
     async function loadProfile() {
@@ -57,13 +67,13 @@ function MiUsuarioContent() {
       setProfileError(null);
 
       try {
-        setEmail(user.email ?? "");
+        setEmail(currentUser.email ?? "");
 
         const [{ data: profileData }, { data: authData }] = await Promise.all([
           supabase
             .from("profiles")
             .select("display_name")
-            .eq("id", user.id)
+            .eq("id", currentUser.id)
             .maybeSingle<ProfileRow>(),
           supabase.auth.getUser(),
         ]);
@@ -75,7 +85,7 @@ function MiUsuarioContent() {
         const finalName =
           profileName?.trim() ||
           metaName?.trim() ||
-          user.email ||
+          currentUser.email ||
           "";
 
         setDisplayName(finalName);
@@ -84,6 +94,20 @@ function MiUsuarioContent() {
             ? meta.avatar_path.trim()
             : null
         );
+        setPhone((meta.phone ?? "") || "");
+        setBio((meta.bio ?? "") || "");
+        const loadedEmojiValue = (meta.avatar_emoji ?? "🥦") || "🥦";
+        setEmoji(loadedEmojiValue);
+        setLoadedEmoji(loadedEmojiValue);
+
+        const storedColor = (meta.avatar_color ?? "").trim();
+        if (storedColor) {
+          setAvatarColor(storedColor);
+        } else {
+          const colors = ["#FEF3C7", "#E0F2FE", "#ECFDF3", "#FCE7F3", "#F5F3FF"];
+          const randomColor = colors[Math.floor(Math.random() * colors.length)];
+          setAvatarColor(randomColor);
+        }
       } catch (e) {
         console.error("Error cargando perfil", e);
         setProfileError(
@@ -127,11 +151,11 @@ function MiUsuarioContent() {
     return null;
   }
 
-  const avatarUrl = getProfileImageUrl(avatarPath);
   const avatarInitial =
+    emoji ||
     displayName?.trim()?.charAt(0)?.toUpperCase() ||
     user.email?.trim()?.charAt(0)?.toUpperCase() ||
-    "U";
+    "🥦";
 
   async function handleProfileSubmit(e: FormEvent) {
     e.preventDefault();
@@ -143,6 +167,17 @@ function MiUsuarioContent() {
 
     const trimmedName = displayName.trim();
     const cleanEmail = email.trim().toLowerCase();
+    const cleanPhone = phone.trim();
+    const cleanBio = bio.trim();
+    const cleanEmoji = (emoji || "🥦").trim() || "🥦";
+
+    let nextAvatarColor = avatarColor;
+    if (cleanEmoji !== loadedEmoji) {
+      const colors = ["#FEF3C7", "#E0F2FE", "#ECFDF3", "#FCE7F3", "#F5F3FF"];
+      nextAvatarColor = colors[Math.floor(Math.random() * colors.length)];
+      setAvatarColor(nextAvatarColor);
+      setLoadedEmoji(cleanEmoji);
+    }
 
     const isBasicEmailValid =
       cleanEmail.includes("@") && cleanEmail.includes(".");
@@ -175,6 +210,10 @@ function MiUsuarioContent() {
         email: cleanEmail,
         data: {
           display_name: trimmedName || null,
+          phone: cleanPhone || null,
+          bio: cleanBio || null,
+          avatar_emoji: cleanEmoji,
+          avatar_color: nextAvatarColor,
         },
       });
 
@@ -334,48 +373,19 @@ function MiUsuarioContent() {
 
       <section className="flex-1 px-4 py-4 pb-8 overflow-y-auto space-y-6">
         <div className="flex items-center gap-4">
-          <div className="relative w-16 h-16 rounded-full overflow-hidden bg-muted flex items-center justify-center text-xl font-semibold text-foreground">
-            {avatarUrl ? (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img
-                src={avatarUrl}
-                alt="Foto de perfil"
-                className="w-full h-full object-cover"
-              />
-            ) : (
-              <span aria-hidden>{avatarInitial}</span>
-            )}
+          <div
+            className="relative w-16 h-16 rounded-full overflow-hidden flex items-center justify-center text-2xl"
+            style={{ backgroundColor: avatarColor }}
+          >
+            <span aria-hidden>{avatarInitial}</span>
           </div>
           <div className="flex flex-col gap-1">
             <p className="text-sm font-medium text-foreground">
-              Foto de perfil
+              Imagen de perfil
             </p>
-            <input
-              ref={avatarInputRef}
-              type="file"
-              accept="image/*"
-              className="hidden"
-              onChange={handleAvatarChange}
-            />
-            <Button
-              type="button"
-              variant="outline"
-              size="sm"
-              disabled={uploadingAvatar}
-              onClick={() => avatarInputRef.current?.click()}
-            >
-              {uploadingAvatar ? "Subiendo foto..." : "Cambiar foto"}
-            </Button>
-            {avatarError && (
-              <p className="text-xs text-destructive mt-1">
-                {avatarError}
-              </p>
-            )}
-            {avatarMessage && (
-              <p className="text-xs text-foreground mt-1">
-                {avatarMessage}
-              </p>
-            )}
+            <p className="text-xs text-muted-foreground">
+              Elige un emoji para representarte. Si no eliges ninguno, pondremos una hortaliza al azar.
+            </p>
           </div>
         </div>
 
@@ -400,6 +410,18 @@ function MiUsuarioContent() {
           </div>
           <div className="space-y-1.5">
             <label className="text-sm font-medium text-foreground">
+              Emoji
+            </label>
+            <Input
+              type="text"
+              value={emoji}
+              onChange={(e) => setEmoji(e.target.value)}
+              placeholder="Ej. 🥦"
+              maxLength={4}
+            />
+          </div>
+          <div className="space-y-1.5">
+            <label className="text-sm font-medium text-foreground">
               Email
             </label>
             <Input
@@ -409,6 +431,30 @@ function MiUsuarioContent() {
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               placeholder="tucorreo@email.com"
+            />
+          </div>
+          <div className="space-y-1.5">
+            <label className="text-sm font-medium text-foreground">
+              Teléfono móvil (opcional)
+            </label>
+            <Input
+              type="tel"
+              autoComplete="tel"
+              value={phone}
+              onChange={(e) => setPhone(e.target.value)}
+              placeholder="+34 600 000 000"
+            />
+          </div>
+          <div className="space-y-1.5">
+            <label className="text-sm font-medium text-foreground">
+              Descripción (opcional)
+            </label>
+            <textarea
+              value={bio}
+              onChange={(e) => setBio(e.target.value)}
+              rows={3}
+              className="w-full rounded-xl border border-border bg-card px-3 py-2 text-sm resize-vertical"
+              placeholder="Cuéntanos algo sobre ti y tu forma de cocinar."
             />
           </div>
           {profileError && (

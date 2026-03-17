@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { LogOut, User, Share2 } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { supabase } from "../lib/supabaseClient";
 import { useSupabaseAuth } from "../lib/useSupabaseAuth";
 import { cn } from "../lib/utils";
@@ -12,6 +12,57 @@ export default function AccountMenu() {
   const { user, loading } = useSupabaseAuth();
   const router = useRouter();
   const [open, setOpen] = useState(false);
+  const [displayName, setDisplayName] = useState("");
+  const [avatarEmoji, setAvatarEmoji] = useState("🥦");
+
+  useEffect(() => {
+    if (!user) {
+      setDisplayName("");
+      return;
+    }
+
+    let cancelled = false;
+
+    async function loadDisplayName() {
+      try {
+        const [{ data: profileData }, { data: authData }] = await Promise.all([
+          supabase
+            .from("profiles")
+            .select("display_name")
+            .eq("id", user.id)
+            .maybeSingle<{ display_name: string | null }>(),
+          supabase.auth.getUser(),
+        ]);
+
+        if (cancelled) return;
+
+        const meta = (authData.user?.user_metadata ??
+          {}) as { display_name?: string | null; avatar_emoji?: string | null };
+        const profileName = profileData?.display_name ?? null;
+        const metaName = meta.display_name ?? null;
+
+        const finalName =
+          profileName?.trim() ||
+          metaName?.trim() ||
+          user.email ||
+          "";
+
+        setDisplayName(finalName);
+        setAvatarEmoji((meta.avatar_emoji ?? "🥦") || "🥦");
+      } catch {
+        if (!cancelled) {
+          setDisplayName(user.email ?? "");
+          setAvatarEmoji("🥦");
+        }
+      }
+    }
+
+    void loadDisplayName();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [user]);
 
   if (loading) {
     return (
@@ -31,7 +82,7 @@ export default function AccountMenu() {
     );
   }
 
-  const emailLabel = user.email ?? "";
+  const headerLabel = displayName || user.email || "";
 
   return (
     <div className="relative">
@@ -51,23 +102,32 @@ export default function AccountMenu() {
             "absolute right-0 top-full mt-1 w-56 rounded-xl border border-border bg-card shadow-lg py-2 z-50"
           )}
         >
-          <div className="px-3 py-2 border-b border-border/60">
-            <p className="text-xs text-muted-foreground">Sesión iniciada</p>
-            {emailLabel && (
-              <p className="text-xs font-medium mt-0.5 truncate text-foreground" title={emailLabel}>
-                {emailLabel}
-              </p>
-            )}
-          </div>
+          <button
+            type="button"
+            onClick={() => {
+              setOpen(false);
+              router.push("/mi-usuario");
+            }}
+            className="w-full text-left px-3 py-2 border-b border-border/60 hover:bg-accent/60"
+          >
+            <div className="flex items-center gap-2">
+              <div className="w-7 h-7 rounded-full flex items-center justify-center text-base bg-muted">
+                <span aria-hidden>{avatarEmoji || "🥦"}</span>
+              </div>
+              <div className="min-w-0">
+                <p className="text-xs text-muted-foreground">Mi perfil</p>
+                {headerLabel && (
+                  <p
+                    className="text-xs font-medium mt-0.5 truncate text-foreground"
+                    title={headerLabel}
+                  >
+                    {headerLabel}
+                  </p>
+                )}
+              </div>
+            </div>
+          </button>
           <div className="grid gap-0.5 pt-1">
-            <Link
-              href="/mi-usuario"
-              className="flex items-center gap-2 w-full px-3 py-2.5 text-left text-sm font-medium hover:bg-accent no-underline text-foreground"
-              onClick={() => setOpen(false)}
-            >
-              <User className="h-4 w-4" />
-              Mi usuario
-            </Link>
             <Link
               href="/mis-recetas"
               className="flex items-center gap-2 w-full px-3 py-2.5 text-left text-sm font-medium hover:bg-accent no-underline text-foreground"

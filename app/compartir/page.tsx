@@ -212,29 +212,43 @@ function CompartirContent() {
     // y preparamos un nombre público para «Quiénes cocinan».
     let authorDisplayName: string | null = null;
 
-    const [{ data: existingProfile, error: profileSelectError }, { data: authData }] =
-      await Promise.all([
-        supabase
-          .from("profiles")
-          .select("display_name")
-          .eq("id", user.id)
-          .maybeSingle(),
-        supabase.auth.getUser(),
-      ]);
+    const [{ data: existingProfile }, { data: authData }] = await Promise.all([
+      supabase
+        .from("profiles")
+        .select("display_name")
+        .eq("id", user.id)
+        .maybeSingle(),
+      supabase.auth.getUser(),
+    ]);
 
-    const metaDisplayName = (authData.user?.user_metadata as { display_name?: string } | null | undefined)
-      ?.display_name;
-    const emailFallback = authData.user?.email ?? user.email ?? null;
-    const emailNamePart =
-      emailFallback && emailFallback.includes("@")
-        ? emailFallback.split("@")[0]
-        : emailFallback;
+    const metaDisplayName = (authData.user?.user_metadata as { display_name?: string } | null | undefined)?.display_name;
 
+    // Nombre público elegido por la persona (perfil o metadatos).
+    // Si no hay ninguno, más abajo generaremos "Cocinillas N".
     authorDisplayName =
       (existingProfile?.display_name ?? "").trim() ||
       (metaDisplayName ?? "").trim() ||
-      (emailNamePart ?? "").trim() ||
       null;
+
+    // Si seguimos sin nombre, generamos un alias tipo "Cocinillas N"
+    if (!authorDisplayName) {
+      const { data: cocinillasProfiles } = await supabase
+        .from("profiles")
+        .select("display_name")
+        .ilike("display_name", "Cocinillas %");
+
+      let maxNumber = 0;
+      for (const row of cocinillasProfiles ?? []) {
+        const raw = String((row as { display_name?: string }).display_name ?? "").trim();
+        const match = raw.match(/^Cocinillas\s+(\d+)$/i);
+        if (match) {
+          const n = Number.parseInt(match[1], 10);
+          if (!Number.isNaN(n) && n > maxNumber) maxNumber = n;
+        }
+      }
+      const nextNumber = maxNumber + 1;
+      authorDisplayName = `Cocinillas ${nextNumber}`;
+    }
 
     const { error: profileError } = await supabase.from("profiles").upsert({
       id: user.id,

@@ -320,83 +320,74 @@ export default function NosotrasPage() {
                 </li>
               );
             })}
-            {communityCooks.length > 0 && (
-              <>
-                <li className="pt-4 pb-1">
-                  <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
-                    Comunidad TaulApp
-                  </h3>
-                </li>
-                {communityCooks.map((cook) => {
-                  const cookSectionId = `community-${cook.authorId}`;
-                  const isOpen = openSectionId === cookSectionId;
-                  return (
-                    <li
-                      key={cook.authorId}
-                      className="border border-border rounded-[var(--radius)] overflow-hidden bg-card scroll-mt-4"
+            {communityCooks.length > 0 &&
+              communityCooks.map((cook) => {
+                const cookSectionId = `community-${cook.authorId}`;
+                const isOpen = openSectionId === cookSectionId;
+                return (
+                  <li
+                    key={cook.authorId}
+                    className="border border-border rounded-[var(--radius)] overflow-hidden bg-card scroll-mt-4"
+                  >
+                    <button
+                      type="button"
+                      onClick={() =>
+                        setOpenSectionId(isOpen ? null : cookSectionId)
+                      }
+                      className={cn(
+                        "w-full flex items-center justify-between gap-2 px-4 py-3 text-left",
+                        "hover:bg-muted/50 transition-colors",
+                        "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-inset"
+                      )}
+                      aria-expanded={isOpen}
                     >
-                      <button
-                        type="button"
-                        onClick={() =>
-                          setOpenSectionId(isOpen ? null : cookSectionId)
-                        }
-                        className={cn(
-                          "w-full flex items-center justify-between gap-2 px-4 py-3 text-left",
-                          "hover:bg-muted/50 transition-colors",
-                          "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-inset"
-                        )}
-                        aria-expanded={isOpen}
-                      >
-                        <span className="font-medium text-foreground">
-                          {cook.name}
-                        </span>
-                        <span className="text-muted-foreground text-sm ml-auto flex items-center gap-1">
-                          {cook.recipes.length} receta
-                          {cook.recipes.length !== 1 ? "s" : ""}
-                          <ChevronDown
-                            className={cn(
-                              "size-5 text-muted-foreground shrink-0 transition-transform",
-                              isOpen && "rotate-180"
-                            )}
-                          />
-                        </span>
-                      </button>
-                      <div
-                        className={cn(
-                          "grid transition-[grid-template-rows] duration-200 ease-out",
-                          isOpen ? "grid-rows-[1fr]" : "grid-rows-[0fr]"
-                        )}
-                      >
-                        <div className="min-h-0 overflow-hidden">
-                          <div className="px-4 pb-4 pt-0 border-t border-border/60 space-y-3">
-                            <p className="text-sm text-muted-foreground pt-3">
-                              Forma parte de la comunidad de TaulApp y ha
-                              compartido estas recetas:
-                            </p>
-                            <ul className="space-y-1">
-                              {cook.recipes.map((r) => (
-                                <li key={r.id}>
-                                  <Link
-                                    href={`/recipe/${r.id}`}
-                                    className="inline-flex items-center gap-1.5 text-sm text-primary font-medium underline underline-offset-2 hover:opacity-80 cursor-pointer py-1 -mx-1 px-1 rounded"
-                                  >
-                                    <ChevronRight
-                                      className="size-3.5 shrink-0"
-                                      aria-hidden
-                                    />
-                                    {r.title}
-                                  </Link>
-                                </li>
-                              ))}
-                            </ul>
-                          </div>
+                      <span className="font-medium text-foreground">
+                        {cook.name}
+                      </span>
+                      <span className="text-muted-foreground text-sm ml-auto flex items-center gap-1">
+                        {cook.recipes.length} receta
+                        {cook.recipes.length !== 1 ? "s" : ""}
+                        <ChevronDown
+                          className={cn(
+                            "size-5 text-muted-foreground shrink-0 transition-transform",
+                            isOpen && "rotate-180"
+                          )}
+                        />
+                      </span>
+                    </button>
+                    <div
+                      className={cn(
+                        "grid transition-[grid-template-rows] duration-200 ease-out",
+                        isOpen ? "grid-rows-[1fr]" : "grid-rows-[0fr]"
+                      )}
+                    >
+                      <div className="min-h-0 overflow-hidden">
+                        <div className="px-4 pb-4 pt-0 border-t border-border/60 space-y-3">
+                          <p className="text-sm text-muted-foreground pt-3">
+                            Ha compartido estas recetas:
+                          </p>
+                          <ul className="space-y-1">
+                            {cook.recipes.map((r) => (
+                              <li key={r.id}>
+                                <Link
+                                  href={`/recipe/${r.id}`}
+                                  className="inline-flex items-center gap-1.5 text-sm text-primary font-medium underline underline-offset-2 hover:opacity-80 cursor-pointer py-1 -mx-1 px-1 rounded"
+                                >
+                                  <ChevronRight
+                                    className="size-3.5 shrink-0"
+                                    aria-hidden
+                                  />
+                                  {r.title}
+                                </Link>
+                              </li>
+                            ))}
+                          </ul>
                         </div>
                       </div>
-                    </li>
-                  );
-                })}
-              </>
-            )}
+                    </div>
+                  </li>
+                );
+              })}
         </ul>
       </div>
     </main>
