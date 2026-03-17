@@ -8,6 +8,14 @@ export function getRecipeImageUrl(imagePath: string | null | undefined): string 
   return `${base}/storage/v1/object/public/recipe-images/${imagePath.trim()}`;
 }
 
+/**
+ * URL pública de una imagen de perfil de usuaria.
+ * Por ahora reutiliza el mismo bucket `recipe-images`, en la carpeta que elijas.
+ */
+export function getProfileImageUrl(imagePath: string | null | undefined): string | null {
+  return getRecipeImageUrl(imagePath);
+}
+
 /** Máximo de fotos en el carrusel de una receta. */
 export const MAX_RECIPE_IMAGES = 6;
 

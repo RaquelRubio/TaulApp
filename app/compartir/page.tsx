@@ -209,12 +209,37 @@ function CompartirContent() {
     }
 
     // Aseguramos que existe un perfil para esta usuaria (necesario por la FK author_id → profiles.id)
-    const { error: profileError } = await supabase
-      .from("profiles")
-      .upsert({
-        id: user.id,
-        display_name: user.email ?? null,
-      });
+    // y preparamos un nombre público para «Quiénes cocinan».
+    let authorDisplayName: string | null = null;
+
+    const [{ data: existingProfile, error: profileSelectError }, { data: authData }] =
+      await Promise.all([
+        supabase
+          .from("profiles")
+          .select("display_name")
+          .eq("id", user.id)
+          .maybeSingle(),
+        supabase.auth.getUser(),
+      ]);
+
+    const metaDisplayName = (authData.user?.user_metadata as { display_name?: string } | null | undefined)
+      ?.display_name;
+    const emailFallback = authData.user?.email ?? user.email ?? null;
+    const emailNamePart =
+      emailFallback && emailFallback.includes("@")
+        ? emailFallback.split("@")[0]
+        : emailFallback;
+
+    authorDisplayName =
+      (existingProfile?.display_name ?? "").trim() ||
+      (metaDisplayName ?? "").trim() ||
+      (emailNamePart ?? "").trim() ||
+      null;
+
+    const { error: profileError } = await supabase.from("profiles").upsert({
+      id: user.id,
+      display_name: authorDisplayName,
+    });
 
     if (profileError) {
       setSubmitting(false);
@@ -296,6 +321,7 @@ function CompartirContent() {
       .insert([
         {
           author_id: user.id,
+          author_display_name: authorDisplayName,
           title: trimmedTitle,
           nationality: nationality.trim() || null,
           time_minutes: timeNumber,

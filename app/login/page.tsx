@@ -44,23 +44,32 @@ function LoginContent() {
     setError(null);
     setInfo(null);
     setLoading(true);
+    const cleanEmail = email.trim().toLowerCase();
     const { error } = await supabase.auth.signInWithPassword({
-      email,
+      email: cleanEmail,
       password,
     });
     setLoading(false);
     if (error) {
+      console.error("signInWithPassword error", error);
       const rawMessage = (error.message || "").toLowerCase();
-      if (rawMessage.includes("invalid login credentials")) {
-        setError("El email o la contraseña no son correctos.");
-      } else if (rawMessage.includes("email not confirmed")) {
+
+      if (rawMessage.includes("email not confirmed")) {
         setError(
           "Tu email todavía no está confirmado. Revisa tu bandeja de entrada y confirma tu cuenta para poder entrar."
         );
-      } else if (rawMessage.includes("user not found")) {
+      } else if (
+        rawMessage.includes("invalid login credentials") ||
+        rawMessage.includes("user not found")
+      ) {
+        // Caso genérico de email que no existe o credenciales inválidas:
+        // mostramos el mensaje centrado en que no hay cuenta con ese email.
         setError("No hemos encontrado ninguna cuenta con ese email.");
       } else {
-        setError("No se ha podido iniciar sesión. Inténtalo de nuevo en unos segundos.");
+        setError(
+          error.message ||
+            "No se ha podido iniciar sesión. Inténtalo de nuevo en unos segundos."
+        );
       }
       return;
     }
@@ -83,7 +92,9 @@ function LoginContent() {
     if (error) {
       console.error("resetPasswordForEmail error", error);
       const rawMessage = (error.message || "").toLowerCase();
-      if (rawMessage.includes("load failed")) {
+      if (rawMessage.includes("rate limit")) {
+        setError("Demasiados procesos abiertos, inténtalo de nuevo más tarde.");
+      } else if (rawMessage.includes("load failed")) {
         setError(
           "No hemos podido enviar el email de recuperación. Revisa tu conexión o inténtalo de nuevo en unos segundos."
         );

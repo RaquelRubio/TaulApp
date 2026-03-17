@@ -6,6 +6,7 @@ import { cn } from "@/app/lib/utils";
 import teamData from "@/app/data/team.json";
 import recipesData from "@/app/data/recipes.json";
 import { ChevronDown, ChevronRight } from "lucide-react";
+import { supabase } from "../lib/supabaseClient";
 
 type TeamMember = {
   id: string;
@@ -20,6 +21,12 @@ type Recipe = { id: string; title: string };
 
 const team = teamData as TeamMember[];
 const recipes = recipesData as Recipe[];
+
+type CommunityCook = {
+  authorId: string;
+  name: string;
+  recipes: { id: string; title: string }[];
+};
 
 const recipesById: Record<string, Recipe> = {};
 recipes.forEach((r) => { recipesById[r.id] = r; });
@@ -87,6 +94,8 @@ const SOBRE_SECTION_ID = "sobre";
 export default function NosotrasPage() {
   const [openSectionId, setOpenSectionId] = useState<string | null>(null);
   const [failedTeamImageIds, setFailedTeamImageIds] = useState<Set<string>>(new Set());
+  const [communityCooks, setCommunityCooks] = useState<CommunityCook[]>([]);
+  const [loadingCommunity, setLoadingCommunity] = useState(false);
 
   useEffect(() => {
     const hash = typeof window !== "undefined" ? window.location.hash.slice(1) : "";
@@ -96,6 +105,67 @@ export default function NosotrasPage() {
       const el = document.getElementById(`person-${personId}`);
       if (el) setTimeout(() => el.scrollIntoView({ behavior: "smooth", block: "start" }), 300);
     }
+  }, []);
+
+  // Cargamos la lista de personas de la comunidad que han compartido al menos una receta
+  useEffect(() => {
+    let cancelled = false;
+    setLoadingCommunity(true);
+
+    async function loadCommunity() {
+      // Primero intentamos leer también author_display_name. Si la columna no existe (proyectos antiguos),
+      // reintentamos sin ella y usamos un nombre genérico.
+      const { data, error } = await supabase
+        .from("user_recipes")
+        .select("id, title, author_id, author_display_name")
+        .order("created_at", { ascending: false });
+
+      let rows: any[] | null = data as any[] | null;
+      const msg = (error?.message ?? "").toLowerCase();
+
+      if (error && (msg.includes("author_display_name") || msg.includes("column"))) {
+        const fallback = await supabase
+          .from("user_recipes")
+          .select("id, title, author_id")
+          .order("created_at", { ascending: false });
+        rows = (fallback.data ?? []) as any[];
+      } else if (error || !rows) {
+        rows = [];
+      }
+
+      if (cancelled) return;
+
+      const map = new Map<string, CommunityCook>();
+      for (const row of rows) {
+        if (!row.author_id) continue;
+        const recipe = {
+          id: row.id as string,
+          title: (row.title as string | null) ?? "Receta sin título",
+        };
+        const safeName =
+          (row.author_display_name as string | null | undefined)?.trim() ||
+          "Persona de la comunidad";
+        const existing = map.get(row.author_id as string);
+        if (existing) {
+          existing.recipes.push(recipe);
+        } else {
+          map.set(row.author_id as string, {
+            authorId: row.author_id as string,
+            name: safeName,
+            recipes: [recipe],
+          });
+        }
+      }
+
+      setCommunityCooks(Array.from(map.values()));
+      setLoadingCommunity(false);
+    }
+
+    void loadCommunity();
+
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
   return (
@@ -250,6 +320,83 @@ export default function NosotrasPage() {
                 </li>
               );
             })}
+            {communityCooks.length > 0 && (
+              <>
+                <li className="pt-4 pb-1">
+                  <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
+                    Comunidad TaulApp
+                  </h3>
+                </li>
+                {communityCooks.map((cook) => {
+                  const cookSectionId = `community-${cook.authorId}`;
+                  const isOpen = openSectionId === cookSectionId;
+                  return (
+                    <li
+                      key={cook.authorId}
+                      className="border border-border rounded-[var(--radius)] overflow-hidden bg-card scroll-mt-4"
+                    >
+                      <button
+                        type="button"
+                        onClick={() =>
+                          setOpenSectionId(isOpen ? null : cookSectionId)
+                        }
+                        className={cn(
+                          "w-full flex items-center justify-between gap-2 px-4 py-3 text-left",
+                          "hover:bg-muted/50 transition-colors",
+                          "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-inset"
+                        )}
+                        aria-expanded={isOpen}
+                      >
+                        <span className="font-medium text-foreground">
+                          {cook.name}
+                        </span>
+                        <span className="text-muted-foreground text-sm ml-auto flex items-center gap-1">
+                          {cook.recipes.length} receta
+                          {cook.recipes.length !== 1 ? "s" : ""}
+                          <ChevronDown
+                            className={cn(
+                              "size-5 text-muted-foreground shrink-0 transition-transform",
+                              isOpen && "rotate-180"
+                            )}
+                          />
+                        </span>
+                      </button>
+                      <div
+                        className={cn(
+                          "grid transition-[grid-template-rows] duration-200 ease-out",
+                          isOpen ? "grid-rows-[1fr]" : "grid-rows-[0fr]"
+                        )}
+                      >
+                        <div className="min-h-0 overflow-hidden">
+                          <div className="px-4 pb-4 pt-0 border-t border-border/60 space-y-3">
+                            <p className="text-sm text-muted-foreground pt-3">
+                              Forma parte de la comunidad de TaulApp y ha
+                              compartido estas recetas:
+                            </p>
+                            <ul className="space-y-1">
+                              {cook.recipes.map((r) => (
+                                <li key={r.id}>
+                                  <Link
+                                    href={`/recipe/${r.id}`}
+                                    className="inline-flex items-center gap-1.5 text-sm text-primary font-medium underline underline-offset-2 hover:opacity-80 cursor-pointer py-1 -mx-1 px-1 rounded"
+                                  >
+                                    <ChevronRight
+                                      className="size-3.5 shrink-0"
+                                      aria-hidden
+                                    />
+                                    {r.title}
+                                  </Link>
+                                </li>
+                              ))}
+                            </ul>
+                          </div>
+                        </div>
+                      </div>
+                    </li>
+                  );
+                })}
+              </>
+            )}
         </ul>
       </div>
     </main>

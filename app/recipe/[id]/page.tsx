@@ -285,6 +285,7 @@ function RecipeContent({
 
   const recipeTitle = recipe.title ?? (recipe as { name?: string }).name ?? recipe.id;
   const shareText = `Mira esta receta: ${recipeTitle}`;
+  const isCommunityRecipe = !!dbRecipe && !staticRecipe;
 
   return (
     <main className="min-h-screen bg-white font-sans max-w-[520px] mx-auto text-foreground">
@@ -604,6 +605,34 @@ function RecipeContent({
             >
               Eliminar receta
             </button>
+          </section>
+        )}
+
+        {/* Autor de la receta (comunidad) */}
+        {isCommunityRecipe && (
+          <section className="mt-6 pt-4 border-t border-border/60">
+            <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-2">
+              Receta compartida por
+            </p>
+            <div className="flex items-center gap-3 p-3 rounded-xl bg-muted/50 border border-transparent">
+              {(() => {
+                const rawName =
+                  (recipe as { author_display_name?: string | null }).author_display_name ??
+                  "Persona de la comunidad";
+                const safeName = String(rawName).trim() || "Persona de la comunidad";
+                const initial = safeName.charAt(0).toUpperCase() || "C";
+                return (
+                  <>
+                    <span className="relative w-12 h-12 rounded-full overflow-hidden bg-muted shrink-0 flex items-center justify-center text-lg font-semibold">
+                      {initial}
+                    </span>
+                    <span className="font-medium text-foreground">
+                      {safeName}
+                    </span>
+                  </>
+                );
+              })()}
+            </div>
           </section>
         )}
 

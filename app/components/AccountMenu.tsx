@@ -61,6 +61,14 @@ export default function AccountMenu() {
           </div>
           <div className="grid gap-0.5 pt-1">
             <Link
+              href="/mi-usuario"
+              className="flex items-center gap-2 w-full px-3 py-2.5 text-left text-sm font-medium hover:bg-accent no-underline text-foreground"
+              onClick={() => setOpen(false)}
+            >
+              <User className="h-4 w-4" />
+              Mi usuario
+            </Link>
+            <Link
               href="/mis-recetas"
               className="flex items-center gap-2 w-full px-3 py-2.5 text-left text-sm font-medium hover:bg-accent no-underline text-foreground"
               onClick={() => setOpen(false)}

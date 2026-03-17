@@ -99,6 +99,13 @@ alter table public.user_recipes
 
 Vuelve a guardar la receta después.
 
+Si quieres que en la pantalla «Quiénes cocinan» aparezcan los nombres de las personas de la comunidad que han compartido recetas, añade también esta columna (opcional pero recomendado):
+
+```sql
+alter table public.user_recipes
+  add column if not exists author_display_name text;
+```
+
 ### 4. Bucket de imágenes (obligatorio para subir fotos)
 
 Si al subir una receta ves **"bucket not found"**, crea el bucket. Si ves **"new row violates row-level security policy"**, crea el bucket y luego las políticas de Storage siguientes.

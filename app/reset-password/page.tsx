@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 import { createClient } from "@supabase/supabase-js";
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL as string;
@@ -9,6 +10,7 @@ const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY as string;
 const supabase = createClient(supabaseUrl, supabaseAnonKey);
 
 export default function ResetPasswordPage() {
+  const router = useRouter();
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [status, setStatus] = useState<"idle" | "recovering" | "submitting">("idle");
@@ -59,13 +61,23 @@ export default function ResetPasswordPage() {
     const { error } = await supabase.auth.updateUser({ password });
 
     if (error) {
+      console.error("updateUser password error", error);
       setStatus("recovering");
-      setError("No se ha podido actualizar la contraseña. Prueba de nuevo.");
+      setError(
+        error.message ||
+          "No se ha podido actualizar la contraseña. Prueba de nuevo."
+      );
       return;
     }
 
     setStatus("idle");
-    setMessage("Tu contraseña se ha actualizado correctamente. Ya puedes cerrar esta ventana y volver a iniciar sesión.");
+    setError(null);
+    setMessage("¡Contraseña cambiada! Te llevamos a la página de inicio...");
+
+    // Redirige a la home unos segundos después de cambiar la contraseña
+    setTimeout(() => {
+      router.push("/");
+    }, 1500);
   }
 
   return (
