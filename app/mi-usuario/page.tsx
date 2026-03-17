@@ -5,7 +5,6 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { supabase } from "../lib/supabaseClient";
 import { useSupabaseAuth } from "../lib/useSupabaseAuth";
-import { getProfileImageUrl } from "../lib/recipeImages";
 import { Input } from "../components/ui/input";
 import { Button } from "../components/ui/button";
 
@@ -28,7 +27,6 @@ function MiUsuarioContent() {
 
   const [displayName, setDisplayName] = useState("");
   const [email, setEmail] = useState("");
-  const [avatarPath, setAvatarPath] = useState<string | null>(null);
   const [phone, setPhone] = useState("");
   const [bio, setBio] = useState("");
   const [emoji, setEmoji] = useState("🥦");
@@ -46,10 +44,10 @@ function MiUsuarioContent() {
   const [passwordMessage, setPasswordMessage] = useState<string | null>(null);
   const [savingPassword, setSavingPassword] = useState(false);
 
-  const [avatarError, setAvatarError] = useState<string | null>(null);
-  const [avatarMessage, setAvatarMessage] = useState<string | null>(null);
-  const [uploadingAvatar, setUploadingAvatar] = useState(false);
-  const avatarInputRef = useRef<HTMLInputElement | null>(null);
+  const emojiInputRef = useRef<HTMLInputElement | null>(null);
+  const [deletingAccount, setDeletingAccount] = useState(false);
+  const [deleteError, setDeleteError] = useState<string | null>(null);
+  const [deleteMessage, setDeleteMessage] = useState<string | null>(null);
 
   useEffect(() => {
     if (loading) return;
@@ -89,11 +87,6 @@ function MiUsuarioContent() {
           "";
 
         setDisplayName(finalName);
-        setAvatarPath(
-          typeof meta.avatar_path === "string" && meta.avatar_path.trim()
-            ? meta.avatar_path.trim()
-            : null
-        );
         setPhone((meta.phone ?? "") || "");
         setBio((meta.bio ?? "") || "");
         const loadedEmojiValue = (meta.avatar_emoji ?? "🥦") || "🥦";
@@ -156,6 +149,30 @@ function MiUsuarioContent() {
     displayName?.trim()?.charAt(0)?.toUpperCase() ||
     user.email?.trim()?.charAt(0)?.toUpperCase() ||
     "🥦";
+
+  async function ensureCocinillasNameIfEmpty() {
+    if (!user) return;
+    if (displayName.trim()) return;
+
+    try {
+      const { count, error } = await supabase
+        .from("profiles")
+        .select("*", { count: "exact", head: true })
+        .ilike("display_name", "Cocinillas %");
+
+      if (error) {
+        console.error("Error contando Cocinillas", error);
+        setDisplayName("Cocinillas 1");
+        return;
+      }
+
+      const nextNumber = (count ?? 0) + 1;
+      setDisplayName(`Cocinillas ${nextNumber}`);
+    } catch (e) {
+      console.error("Error generando nombre Cocinillas", e);
+      setDisplayName("Cocinillas 1");
+    }
+  }
 
   async function handleProfileSubmit(e: FormEvent) {
     e.preventDefault();
@@ -289,72 +306,38 @@ function MiUsuarioContent() {
     }
   }
 
-  async function handleAvatarChange(
-    e: React.ChangeEvent<HTMLInputElement>
-  ) {
+  async function handleDeleteAccount() {
     if (!user) return;
-    const file = e.target.files?.[0];
-    e.target.value = "";
-    if (!file) return;
+    const confirmed = window.confirm(
+      "¿Seguro que quieres eliminar tu cuenta? Se borrarán también tus recetas guardadas en TaulApp."
+    );
+    if (!confirmed) return;
 
-    setAvatarError(null);
-    setAvatarMessage(null);
-    setUploadingAvatar(true);
+    setDeleteError(null);
+    setDeleteMessage(null);
+    setDeletingAccount(true);
 
     try {
-      const ext =
-        file.name.split(".").pop()?.toLowerCase() ||
-        "jpg";
-      const safePath = `avatars/${user.id}/${Date.now()}.${ext}`;
+      const { error } = await supabase
+        .from("profiles")
+        .delete()
+        .eq("id", user.id);
 
-      const { error: uploadError } = await supabase.storage
-        .from("recipe-images")
-        .upload(safePath, file, {
-          cacheControl: "3600",
-          upsert: false,
-        });
-
-      if (uploadError) {
-        console.error("Error subiendo avatar", uploadError);
-        const msg = (uploadError.message ?? "").toLowerCase();
-        const isBucketNotFound =
-          msg.includes("bucket not found") ||
-          msg.includes("not found");
-        const isRls =
-          msg.includes("row-level security") ||
-          msg.includes("policy");
-        setAvatarError(
-          isBucketNotFound
-            ? "Falta crear el bucket de fotos en Supabase: ve a Storage → New bucket → nombre «recipe-images», público. Ver docs/supabase.md."
-            : isRls
-              ? "Storage no permite subir aún. En Supabase SQL Editor ejecuta las políticas de Storage del docs/supabase.md (sección 4, paso 2)."
-              : uploadError.message ||
-                "No se ha podido subir la foto. Inténtalo de nuevo."
+      if (error) {
+        console.error("Error eliminando perfil", error);
+        setDeleteError(
+          error.message ||
+            "No se ha podido eliminar tu cuenta. Inténtalo de nuevo en unos segundos."
         );
-        setUploadingAvatar(false);
+        setDeletingAccount(false);
         return;
       }
 
-      const { error: authError } = await supabase.auth.updateUser({
-        data: {
-          avatar_path: safePath,
-        },
-      });
-
-      if (authError) {
-        console.error("Error guardando avatar en metadata", authError);
-        setAvatarError(
-          authError.message ||
-            "La foto se ha subido pero no se ha podido guardar en tu perfil."
-        );
-        setUploadingAvatar(false);
-        return;
-      }
-
-      setAvatarPath(safePath);
-      setAvatarMessage("Foto de perfil actualizada.");
+      setDeleteMessage("Tu cuenta se ha eliminado correctamente.");
+      await supabase.auth.signOut();
+      router.push("/");
     } finally {
-      setUploadingAvatar(false);
+      setDeletingAccount(false);
     }
   }
 
@@ -374,17 +357,18 @@ function MiUsuarioContent() {
       <section className="flex-1 px-4 py-4 pb-8 overflow-y-auto space-y-6">
         <div className="flex items-center gap-4">
           <div
-            className="relative w-16 h-16 rounded-full overflow-hidden flex items-center justify-center text-2xl"
+            className="relative w-16 h-16 rounded-full overflow-hidden flex items-center justify-center text-2xl border border-border bg-card select-none"
             style={{ backgroundColor: avatarColor }}
+            aria-hidden
           >
-            <span aria-hidden>{avatarInitial}</span>
+            <span>{avatarInitial}</span>
           </div>
           <div className="flex flex-col gap-1">
             <p className="text-sm font-medium text-foreground">
               Imagen de perfil
             </p>
             <p className="text-xs text-muted-foreground">
-              Elige un emoji para representarte. Si no eliges ninguno, pondremos una hortaliza al azar.
+              Tu imagen de perfil siempre será un emoji dentro de un marco redondo. Puedes cambiarlo en el campo de emoji junto al nombre.
             </p>
           </div>
         </div>
@@ -398,27 +382,29 @@ function MiUsuarioContent() {
           </h2>
           <div className="space-y-1.5">
             <label className="text-sm font-medium text-foreground">
-              Nombre
+              Emoji y nombre
             </label>
-            <Input
-              type="text"
-              autoComplete="name"
-              value={displayName}
-              onChange={(e) => setDisplayName(e.target.value)}
-              placeholder="Cómo quieres que te veamos en TaulApp"
-            />
-          </div>
-          <div className="space-y-1.5">
-            <label className="text-sm font-medium text-foreground">
-              Emoji
-            </label>
-            <Input
-              type="text"
-              value={emoji}
-              onChange={(e) => setEmoji(e.target.value)}
-              placeholder="Ej. 🥦"
-              maxLength={4}
-            />
+            <div className="flex items-center gap-2">
+              <Input
+                type="text"
+                ref={emojiInputRef}
+                value={emoji}
+                onChange={(e) => setEmoji(e.target.value)}
+                placeholder="🥦"
+                maxLength={4}
+                className="w-14 text-center"
+              />
+              <Input
+                type="text"
+                autoComplete="name"
+                value={displayName}
+                onChange={(e) => setDisplayName(e.target.value)}
+                onBlur={() => {
+                  void ensureCocinillasNameIfEmpty();
+                }}
+                placeholder="Cómo quieres que te veamos en TaulApp"
+              />
+            </div>
           </div>
           <div className="space-y-1.5">
             <label className="text-sm font-medium text-foreground">
@@ -531,6 +517,36 @@ function MiUsuarioContent() {
             {savingPassword ? "Actualizando..." : "Actualizar contraseña"}
           </Button>
         </form>
+
+        <section className="space-y-3 rounded-xl border border-destructive/40 bg-destructive/5 p-4">
+          <h2 className="text-sm font-bold text-destructive">
+            Eliminar cuenta
+          </h2>
+          <p className="text-xs text-destructive">
+            Si eliminas tu cuenta, se borrarán también tus recetas asociadas. Esta acción no se puede deshacer.
+          </p>
+          {deleteError && (
+            <p className="text-xs text-destructive">
+              {deleteError}
+            </p>
+          )}
+          {deleteMessage && (
+            <p className="text-xs text-foreground">
+              {deleteMessage}
+            </p>
+          )}
+          <Button
+            type="button"
+            variant="destructive"
+            className="w-full h-11 rounded-xl font-semibold mt-1 text-white"
+            disabled={deletingAccount}
+            onClick={() => {
+              void handleDeleteAccount();
+            }}
+          >
+            {deletingAccount ? "Eliminando cuenta..." : "Eliminar cuenta"}
+          </Button>
+        </section>
       </section>
     </main>
   );
