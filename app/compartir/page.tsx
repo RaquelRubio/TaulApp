@@ -30,6 +30,7 @@ function CompartirContent() {
   const [nationality, setNationality] = useState("");
   const [timeMinutes, setTimeMinutes] = useState<string>("");
   const [dietTags, setDietTags] = useState<DietTag[]>([]);
+  const [baseServings, setBaseServings] = useState<1 | 2 | 4>(4);
   const [ingredientsText, setIngredientsText] = useState("");
   const [stepsText, setStepsText] = useState("");
   const [tips, setTips] = useState("");
@@ -42,6 +43,125 @@ function CompartirContent() {
   const [loadingEdit, setLoadingEdit] = useState(false);
 
   const editId = searchParams.get("editar");
+
+  function parseIngredientLine(line: string): { name: string; qty: number | null; unit: string | null } {
+    const raw = line.trim();
+    if (!raw) {
+      return { name: "", qty: null, unit: null };
+    }
+
+    // 1) Cantidades textuales tipo "una pizca de sal"
+    const pinchMatch = raw.match(/^(una\s+pizca|un\s+pizca|pizca|una\s+punta|un\s+chorrito|chorrito)\s+de\s+(.+)$/i);
+    if (pinchMatch) {
+      const unitText = pinchMatch[1].toLowerCase();
+      const name = pinchMatch[2].trim();
+      return {
+        name,
+        qty: null,
+        unit: unitText,
+      };
+    }
+
+    // 2) Soportar líneas tipo "200g de arroz redondo" o "200 g arroz redondo"
+    const qtyUnitName =
+      /^(?<qty>\d+(?:[.,]\d+)?|\d+\/\d+)\s*(?<unit>g|gr|gramos|kg|ml|l|ud|uds|unidad(?:es)?|cda|cdas|cdita|cdta|taza|tazas)?\b(?:\s+de)?\s+(?<name>.+)$/i;
+    const m = raw.match(qtyUnitName);
+    if (m && m.groups?.name) {
+      const name = m.groups.name.trim();
+      const qtyRaw = m.groups.qty?.trim() ?? "";
+      let qty: number | null = null;
+      if (qtyRaw.includes("/")) {
+        const [a, b] = qtyRaw.split("/");
+        const na = Number.parseFloat(a.replace(",", "."));
+        const nb = Number.parseFloat(b.replace(",", "."));
+        qty = !Number.isNaN(na) && !Number.isNaN(nb) && nb !== 0 ? na / nb : null;
+      } else {
+        const n = Number.parseFloat(qtyRaw.replace(",", "."));
+        qty = Number.isNaN(n) ? null : n;
+      }
+
+      const unitRaw = (m.groups.unit ?? "").toLowerCase();
+      let unit: string | null = null;
+      switch (unitRaw) {
+        case "g":
+        case "gr":
+        case "gramos":
+          unit = "g";
+          break;
+        case "kg":
+          unit = "kg";
+          break;
+        case "ml":
+          unit = "ml";
+          break;
+        case "l":
+          unit = "l";
+          break;
+        case "ud":
+        case "uds":
+        case "unidad":
+        case "unidades":
+          unit = "ud";
+          break;
+        case "cda":
+        case "cdas":
+          unit = "cda";
+          break;
+        case "cdita":
+        case "cdta":
+          unit = "cdita";
+          break;
+        case "taza":
+        case "tazas":
+          unit = "taza";
+          break;
+        default:
+          unit = unitRaw || null;
+      }
+
+      return {
+        name,
+        qty,
+        unit,
+      };
+    }
+
+    // 3) Soportar líneas tipo "Arroz redondo – 200 g"
+    const dashSplit = raw.split("–");
+    if (dashSplit.length === 2) {
+      const left = dashSplit[0].trim();
+      const right = dashSplit[1].trim();
+      const m2 =
+        /^(?<qty>\d+(?:[.,]\d+)?|\d+\/\d+)\s*(?<unit>.*)$/i;
+      const mRight = right.match(m2);
+      if (mRight && mRight.groups) {
+        const qtyRaw = mRight.groups.qty?.trim() ?? "";
+        let qty: number | null = null;
+        if (qtyRaw.includes("/")) {
+          const [a, b] = qtyRaw.split("/");
+          const na = Number.parseFloat(a.replace(",", "."));
+          const nb = Number.parseFloat(b.replace(",", "."));
+          qty = !Number.isNaN(na) && !Number.isNaN(nb) && nb !== 0 ? na / nb : null;
+        } else {
+          const n = Number.parseFloat(qtyRaw.replace(",", "."));
+          qty = Number.isNaN(n) ? null : n;
+        }
+        const unit = (mRight.groups.unit ?? "").trim() || null;
+        return {
+          name: left,
+          qty,
+          unit,
+        };
+      }
+    }
+
+    // 4) Sin cantidad reconocible: solo nombre, cantidad "al gusto"
+    return {
+      name: raw,
+      qty: null,
+      unit: "al gusto",
+    };
+  }
 
   useEffect(() => {
     if (loading) return;
@@ -76,9 +196,28 @@ function CompartirContent() {
         setNationality(r.nationality ?? "");
         setTimeMinutes(r.time_minutes != null ? String(r.time_minutes) : "");
         setDietTags(Array.isArray(r.tags) ? r.tags : []);
+        setBaseServings(
+          (r.baseServings === 1 || r.baseServings === 2 || r.baseServings === 4)
+            ? r.baseServings
+            : 4
+        );
         setIngredientsText(
           Array.isArray(r.ingredients)
-            ? r.ingredients.map((i: { name?: string }) => i?.name ?? "").join("\n")
+            ? r.ingredients
+                .map((i: { name?: string; qty?: number | null; unit?: string | null }) => {
+                  const name = (i?.name ?? "").trim();
+                  const hasQty = i?.qty != null && !Number.isNaN(Number(i.qty));
+                  const unit = (i?.unit ?? "").trim();
+                  if (hasQty) {
+                    const qtyText = String(i.qty);
+                    if (unit) {
+                      return `${qtyText} ${unit} ${name}`.trim();
+                    }
+                    return `${qtyText} ${name}`.trim();
+                  }
+                  return name;
+                })
+                .join("\n")
             : ""
         );
         setStepsText(Array.isArray(r.steps) ? r.steps.join("\n") : "");
@@ -177,7 +316,8 @@ function CompartirContent() {
       .split("\n")
       .map((line) => line.trim())
       .filter((line) => line.length > 0)
-      .map((name) => ({ name }));
+      .map((line) => parseIngredientLine(line))
+      .filter((ing) => ing.name.length > 0);
 
     if (ingredients.length === 0) {
       setError("Añade al menos un ingrediente (obligatorio).");
@@ -307,6 +447,7 @@ function CompartirContent() {
           steps,
           tips: tips.trim() || null,
           storage: storage.trim() || null,
+          baseServings,
           image_path: imagePath,
           image_paths: imagePaths,
           updated_at: new Date().toISOString(),
@@ -315,14 +456,46 @@ function CompartirContent() {
         .eq("author_id", user.id);
 
       if (updateError) {
-        setSubmitting(false);
         const um = (updateError.message ?? "").toLowerCase();
         const isMissingColumn = um.includes("image_paths") || um.includes("schema cache");
+
+        // Fallback: reintentar sin image_paths para no bloquear a la usuaria
+        if (isMissingColumn) {
+          const { error: fallbackError } = await supabase
+            .from("user_recipes")
+            .update({
+              title: trimmedTitle,
+              nationality: nationality.trim() || null,
+              time_minutes: timeNumber,
+              tags: dietTags,
+              ingredients,
+              steps,
+              tips: tips.trim() || null,
+              storage: storage.trim() || null,
+              baseServings,
+              image_path: imagePath,
+              updated_at: new Date().toISOString(),
+            })
+            .eq("id", editId)
+            .eq("author_id", user.id);
+
+          if (!fallbackError) {
+            router.push(`/recipe/${editId}`);
+            return;
+          }
+
+          setSubmitting(false);
+          setError(
+            fallbackError.message ||
+              "No se ha podido guardar los cambios (image_paths). Inténtalo de nuevo en un momento."
+          );
+          return;
+        }
+
+        setSubmitting(false);
         setError(
-          isMissingColumn
-            ? "Falta la columna image_paths. En Supabase → SQL Editor ejecuta: alter table public.user_recipes add column if not exists image_paths text[] default '{}'; (ver docs/supabase.md)."
-            : updateError.message ||
-              "No se ha podido guardar los cambios. Inténtalo de nuevo."
+          updateError.message ||
+            "No se ha podido guardar los cambios. Inténtalo de nuevo."
         );
         return;
       }
@@ -344,6 +517,7 @@ function CompartirContent() {
           steps,
           tips: tips.trim() || null,
           storage: storage.trim() || null,
+          baseServings,
           image_path: imagePath,
           image_paths: imagePaths,
         },
@@ -352,19 +526,54 @@ function CompartirContent() {
       .single();
 
     if (insertError) {
-      setSubmitting(false);
       const msg = (insertError.message ?? "").toLowerCase();
       const isRls =
         msg.includes("row-level security") || msg.includes("policy");
       const isMissingColumn =
         msg.includes("image_paths") || msg.includes("schema cache");
+
+      // Fallback: reintentar insert sin image_paths si la columna no existe
+      if (isMissingColumn) {
+        const { data: dataFallback, error: fallbackError } = await supabase
+          .from("user_recipes")
+          .insert([
+            {
+              author_id: user.id,
+              author_display_name: authorDisplayName,
+              title: trimmedTitle,
+              nationality: nationality.trim() || null,
+              time_minutes: timeNumber,
+              tags: dietTags,
+              ingredients,
+              steps,
+              tips: tips.trim() || null,
+              storage: storage.trim() || null,
+              baseServings,
+              image_path: imagePath,
+            },
+          ])
+          .select("id")
+          .single();
+
+        if (!fallbackError && dataFallback?.id) {
+          router.push(`/recipe/${dataFallback.id}`);
+          return;
+        }
+
+        setSubmitting(false);
+        setError(
+          fallbackError?.message ||
+            "No se ha podido guardar la receta (image_paths). Inténtalo de nuevo en un momento."
+        );
+        return;
+      }
+
+      setSubmitting(false);
       setError(
-        isMissingColumn
-          ? "Falta la columna image_paths. En Supabase → SQL Editor ejecuta: alter table public.user_recipes add column if not exists image_paths text[] default '{}'; (ver docs/supabase.md)."
-          : isRls
-            ? "Error de permisos (RLS). Comprueba en Supabase: Storage → bucket recipe-images → políticas de subida, y que la tabla user_recipes tenga las políticas del docs/supabase.md."
-            : insertError.message ||
-              "No se ha podido guardar la receta. Inténtalo de nuevo en un momento."
+        isRls
+          ? "Error de permisos (RLS). Comprueba en Supabase: Storage → bucket recipe-images → políticas de subida, y que la tabla user_recipes tenga las políticas del docs/supabase.md."
+          : insertError.message ||
+            "No se ha podido guardar la receta. Inténtalo de nuevo en un momento."
       );
       return;
     }
@@ -503,6 +712,32 @@ function CompartirContent() {
                 onChange={(e) => setTimeMinutes(e.target.value)}
                 placeholder="30"
               />
+            </div>
+          </div>
+
+          <div className="space-y-1.5">
+            <label className="text-sm font-medium text-foreground">
+              Raciones base <span className="text-destructive">*</span>
+            </label>
+            <p className="text-xs text-muted-foreground mb-1">
+              Elige para cuántas raciones son las cantidades que vas a escribir en los ingredientes.
+              Luego la app recalculará automáticamente las cantidades para 1, 2 o 4 personas.
+            </p>
+            <div className="flex gap-2">
+              {[1, 2, 4].map((n) => (
+                <button
+                  key={n}
+                  type="button"
+                  onClick={() => setBaseServings(n as 1 | 2 | 4)}
+                  className={`flex-1 py-2.5 rounded-xl text-sm font-medium transition-colors ${
+                    baseServings === n
+                      ? "bg-primary text-primary-foreground"
+                      : "bg-muted text-muted-foreground hover:bg-muted/80"
+                  }`}
+                >
+                  {n} ración{n > 1 ? "es" : ""}
+                </button>
+              ))}
             </div>
           </div>
 

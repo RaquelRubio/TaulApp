@@ -620,11 +620,27 @@ function RecipeContent({
                   (recipe as { author_display_name?: string | null }).author_display_name ??
                   "Persona de la comunidad";
                 const safeName = String(rawName).trim() || "Persona de la comunidad";
+
+                // Si es la receta de la usuaria actual, usamos su emoji de perfil
+                const isCurrentUserAuthor =
+                  !!user && user.id === (recipe as { author_id?: string | null }).author_id;
+                const meta = (user?.user_metadata ?? {}) as { avatar_emoji?: string | null };
+                const avatarEmoji = isCurrentUserAuthor
+                  ? (meta.avatar_emoji || "🥦")
+                  : null;
+
                 const initial = safeName.charAt(0).toUpperCase() || "C";
+
                 return (
                   <>
-                    <span className="relative w-12 h-12 rounded-full overflow-hidden bg-muted shrink-0 flex items-center justify-center text-lg font-semibold">
-                      {initial}
+                    <span className="relative w-12 h-12 rounded-full overflow-hidden bg-muted shrink-0 flex items-center justify-center text-2xl">
+                      {avatarEmoji ? (
+                        <span aria-hidden>{avatarEmoji}</span>
+                      ) : (
+                        <span aria-hidden className="text-lg font-semibold">
+                          {initial}
+                        </span>
+                      )}
                     </span>
                     <span className="font-medium text-foreground">
                       {safeName}
