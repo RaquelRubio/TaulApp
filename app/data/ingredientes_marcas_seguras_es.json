@@ -14,20 +14,6 @@
     ]
   },
   {
-    "ingredient": "Aceite de oliva virgen extra",
-    "options": [
-      {
-        "brand_origin": "Oleoestepa (cooperativa) — Andalucía (España)",
-        "product": "AOVE (DOP Estepa)"      },
-      {
-        "brand_origin": "Aceites Abril — Galicia (España)",
-        "product": "AOVE"      },
-      {
-        "brand_origin": "Almazara o cooperativa local — España",
-        "product": "AOVE temprano / de cosecha"      }
-    ]
-  },
-  {
     "ingredient": "Aceite vegetal",
     "note": "No incluyo marcas envasadas porque es difícil asegurar origen/mezclas sin revisar etiqueta y propiedad. Opción segura: usar aceite de oliva suave de almazara/cooperativa española.",
     "options": [
@@ -51,31 +37,11 @@
     ]
   },
   {
-    "ingredient": "Agua fría",
+    "ingredient": "Caldo",
     "options": [
       {
-        "brand_origin": "Bezoya (Calidad Pascual) — Segovia (España)",
-        "product": "Agua mineral natural"      },
-      {
-        "brand_origin": "Cabreiroá (Hijos de Rivera) — Ourense (España)",
-        "product": "Agua mineral natural"      },
-      {
-        "brand_origin": "Aguas de Mondariz (Vichy Catalan) — Pontevedra (España)",
-        "product": "Agua mineral natural"      }
-    ]
-  },
-  {
-    "ingredient": "Agua o caldo",
-    "options": [
-      {
-        "brand_origin": "Tu carnicería de confianza — España",
-        "product": "Caldo casero"      },
-      {
-        "brand_origin": "Tu carnicería de confianza (Halal) — España",
-        "product": "Caldo casero halal"      },
-      {
-        "brand_origin": "Tu carnicería de confianza (Kosher) — España",
-        "product": "Caldo casero kosher"      },
+        "brand_origin": "Tu carnicería de confianza (también puede ser halal o kosher) — España",
+        "product": "Caldo casero"      }, 
       {
         "brand_origin": "Tu casa — España",
         "product": "Caldo casero (aprovechamiento)"      }
@@ -210,7 +176,7 @@
     ]
   },
   {
-    "ingredient": "Lentejas pardinas",
+    "ingredient": "Lentejas",
     "options": [
       {
         "brand_origin": "Legumbres Luengo — León (España)",
@@ -218,15 +184,6 @@
       {
         "brand_origin": "Tienda a granel / cooperativa local — España",
         "product": "Lenteja pardina"      }
-    ]
-  },
-  {
-    "ingredient": "Lentejas rojas",
-    "note": "Normalmente importadas; no puedo garantizar origen España/Europa sin revisar lote/etiqueta.",
-    "options": [
-      {
-        "brand_origin": "Tienda a granel — España",
-        "product": "Lenteja roja (ver origen en saco)"      }
     ]
   },
   {
@@ -244,11 +201,11 @@
     "ingredient": "Mayonesa",
     "options": [
       {
-        "brand_origin": "Tu casa — España",
-        "product": "Mayonesa casera"      },
+        "brand_origin": "Musa — Navarra (España)",
+        "product": "Mayonesa"      },
       {
-        "brand_origin": "Bar/obrador local — España",
-        "product": "Mayonesa fresca"      }
+        "brand_origin": "Ybarra — Sevilla (España)",
+        "product": "Mayonesa"      }
     ]
   },
   {
@@ -318,17 +275,11 @@
     ]
   },
   {
-    "ingredient": "Pollo (muslo o contramuslo)",
+    "ingredient": "Pollo",
     "options": [
       {
-        "brand_origin": "Tu carnicería de confianza — origen España",
-        "product": "Muslo/contramuslo"      },
-      {
-        "brand_origin": "Tu carnicería de confianza (Halal) — origen España",
-        "product": "Muslo/contramuslo halal"      },
-      {
-        "brand_origin": "Tu carnicería de confianza (Kosher) — origen España",
-        "product": "Pollo kosher (disponibilidad variable)"      }
+        "brand_origin": "Tu carnicería de confianza (también puede ser halal o kosher) — origen España",
+        "product": "Muslo/contramuslo"      }
     ]
   },
   {
