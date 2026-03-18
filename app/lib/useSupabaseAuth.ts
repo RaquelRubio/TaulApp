@@ -6,6 +6,11 @@ import { supabase } from "./supabaseClient";
 type AuthUser = {
   id: string;
   email: string | null;
+  user_metadata?: {
+    avatar_emoji?: string | null;
+    avatar_color?: string | null;
+    display_name?: string | null;
+  } | null;
 };
 
 export function useSupabaseAuth() {
@@ -23,14 +28,30 @@ export function useSupabaseAuth() {
           setUser(null);
         } else {
           const u = data.user;
-          setUser(u ? { id: u.id, email: u.email ?? null } : null);
+          setUser(
+            u
+              ? {
+                  id: u.id,
+                  email: u.email ?? null,
+                  user_metadata: (u.user_metadata ?? null) as AuthUser["user_metadata"],
+                }
+              : null
+          );
         }
         setLoading(false);
       });
 
     const { data: listener } = supabase.auth.onAuthStateChange((_event, session) => {
       const u = session?.user ?? null;
-      setUser(u ? { id: u.id, email: u.email ?? null } : null);
+      setUser(
+        u
+          ? {
+              id: u.id,
+              email: u.email ?? null,
+              user_metadata: (u.user_metadata ?? null) as AuthUser["user_metadata"],
+            }
+          : null
+      );
     });
 
     return () => {

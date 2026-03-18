@@ -3,6 +3,7 @@
 import { useMemo, useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import Image from "next/image";
+import { useRouter } from "next/navigation";
 import recipes from "./data/recipes.json";
 import { getFavorites, toggleFavorite } from "./lib/favorites";
 import { Button } from "./components/ui/button";
@@ -14,27 +15,17 @@ import { cn } from "./lib/utils";
 import AccountMenu from "./components/AccountMenu";
 import { supabase } from "./lib/supabaseClient";
 import { getRecipeImageUrl, getRecipeImageUrls } from "./lib/recipeImages";
-import { getFlagForNationality, normalizeNationalityForFilter } from "./data/countries";
+import { getFlagForNationality, getLabelForNationality, normalizeNationalityForFilter } from "./data/countries";
 
-type Nationality = "todas" | "aleatorio" | "espanola" | "española" | "arabe" | "india" | "palestina" | "marroqui" | "marroquí";
+type NationalityKey = "todas" | "aleatorio";
 
-const nationalityLabel: Record<Exclude<Nationality, "todas" | "aleatorio">, string> = {
-  espanola: "Española",
-  española: "Española",
-  arabe: "Árabe",
-  india: "India",
-  palestina: "Palestina",
-  marroqui: "Marroquí",
-  marroquí: "Marroquí",
-};
-
-/** Banderas por nacionalidad: España 🇪🇸, India 🇮🇳, Palestina 🇵🇸, Marruecos 🇲🇦, Árabe (Marruecos) 🇲🇦 */
+/** Banderas por nacionalidad: España 🇪🇸, India 🇮🇳, Palestina 🇵🇸, Marruecos 🇲🇦, Arabia Saudí 🇸🇦 */
 const nationalityFlag: Record<string, string> = {
   todas: "🌍",
   aleatorio: "🎲",
   espanola: "🇪🇸",
   española: "🇪🇸",
-  arabe: "🇲🇦",
+  arabe: "🇸🇦",
   india: "🇮🇳",
   palestina: "🇵🇸",
   marroqui: "🇲🇦",
@@ -78,6 +69,159 @@ const BLOCK_HALAL_PATTERNS = ["cerdo", "jamon", "jamón", "tocino", "panceta", "
 
 /** Ingredientes que impiden que una receta sea kosher (cerdo, mariscos, etc.). */
 const BLOCK_KOSHER_PATTERNS = ["cerdo", "jamon", "jamón", "tocino", "panceta", "lardo", "marisco", "gamba", "langostino", "mejillon", "mejillón", "calamar", "pulpo", "vieira", "almeja", "ostra", "camarón", "camaron"];
+
+function normalizeForSearch(s: string): string {
+  return (s ?? "")
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .trim();
+}
+
+function canonicalizeIngredientLabel(label: string): string {
+  const raw = String(label ?? "").trim();
+  if (!raw) return "";
+
+  // Quita prefijos típicos de cantidad / medida ("una pizca", "2 cucharadas", "al gusto", etc.)
+  const stripped = raw
+    // quita paréntesis
+    .replace(/\s*\([^)]*\)\s*/g, " ")
+    // quita fracciones y números al inicio ("1/2", "2", "0,5", etc.)
+    .replace(/^\s*(\d+([.,]\d+)?|\d+\s*\/\s*\d+)\s+/i, "")
+    // quita cuantificadores comunes al inicio
+    .replace(
+      /^\s*(una|un|unas|unos)\s+(pizca|pizquita|chorrito|poco|poca|taza|tacita|cucharada|cucharadas|cucharadita|cucharaditas|cucharadita\s+de|cucharadas\s+de|tazas\s+de|vaso|vasos)\s+(de\s+)?/i,
+      ""
+    )
+    .replace(/^\s*(pizca|pizcas|pizquita|pizquitas|chorrito|chorritos|al\s+gusto)\s+(de\s+)?/i, "")
+    // quita coletillas muy comunes
+    .replace(/\bdel?\s+d[ií]a\s+anterior\b/gi, "")
+    .replace(/\s+/g, " ")
+    .trim();
+
+  const lowered = normalizeForSearch(stripped);
+
+  // Casos especiales (para evitar variantes tipo "aceite de oliva", "aceite vegetal", etc.)
+  if (lowered.startsWith("aceite")) return "Aceite";
+  if (lowered.startsWith("arroz")) return "Arroz";
+  if (lowered.startsWith("pan")) return "Pan";
+
+  // Limpieza básica
+  const withoutParens = stripped.replace(/\s+/g, " ").trim();
+
+  // "X de Y" -> "X" (Vinagre de Jerez -> Vinagre, Aceite de oliva -> Aceite, Leche de coco -> Leche)
+  const baseBeforeDe = withoutParens.split(/\s+de\s+/i)[0]?.trim() ?? withoutParens;
+
+  // Quita adjetivos comunes al final (Tomate triturado -> Tomate, Pimentón dulce -> Pimentón)
+  const dropTailWords = new Set([
+    "fresco",
+    "fresca",
+    "frescos",
+    "frescas",
+    "molido",
+    "molida",
+    "molidos",
+    "molidas",
+    "triturado",
+    "triturada",
+    "triturados",
+    "trituradas",
+    "cocido",
+    "cocida",
+    "cocidos",
+    "cocidas",
+    "en",
+    "polvo",
+    "vegetal",
+    "virgen",
+    "extra",
+    "negra",
+    "negro",
+    "negras",
+    "negros",
+    "dulce",
+    "dulces",
+    "verde",
+    "verdes",
+    "rojo",
+    "roja",
+    "rojos",
+    "rojas",
+    // variedades comunes de legumbres (queremos sugerir solo "Lentejas", "Garbanzos", etc.)
+    "pardina",
+    "pardinas",
+  ]);
+
+  const parts = baseBeforeDe.split(" ").filter(Boolean);
+  while (parts.length > 1 && dropTailWords.has(normalizeForSearch(parts[parts.length - 1]))) {
+    parts.pop();
+  }
+
+  const out = parts.join(" ").trim();
+  if (!out) return "";
+  return out.charAt(0).toUpperCase() + out.slice(1);
+}
+
+function isExcludedFoodSuggestion(label: string): boolean {
+  const s = normalizeForSearch(label);
+  if (!s) return true;
+
+  // Si todavía contiene números o fracciones, lo consideramos "cantidad" y se excluye
+  if (/[0-9]/.test(s) || /\b\d+\s*\/\s*\d+\b/.test(s)) return true;
+
+  // Palabras de cantidad sueltas
+  if (/\b(pizca|pizcas|chorrito|chorritos|cucharada|cucharadas|cucharadita|cucharaditas|taza|tazas|vaso|vasos|al\s+gusto)\b/.test(s)) {
+    return true;
+  }
+
+  // Bebidas (excluye también variantes tipo "agua mineral", "té verde", etc.)
+  if (/\b(agua|cafe|te|infusion|zumo|jugo|cerveza|vino|licor|ron|whisky|brandy|refresco|cola|batido)\b/.test(s)) {
+    return true;
+  }
+
+  // Especias y hierbas típicas
+  const spices = new Set([
+    "pimienta",
+    "pimenton",
+    "pimentón",
+    "comino",
+    "curry",
+    "curcuma",
+    "cúrcuma",
+    "laurel",
+    "oregano",
+    "orégano",
+    "canela",
+    "clavo",
+    "jengibre",
+    "nuez moscada",
+    "vainilla",
+    "pimenton",
+    "azafran",
+    "azafrán",
+    "perejil",
+    "cilantro",
+    "romero",
+    "tomillo",
+    "albahaca",
+  ]);
+  if (spices.has(s)) return true;
+
+  // Condimentos / básicos que no quieres sugerir
+  const condiments = new Set([
+    "sal",
+    "azucar",
+    "azúcar",
+    "vinagre",
+    "mayonesa",
+    "mostaza",
+    "ketchup",
+    "salsa",
+  ]);
+  if (condiments.has(s)) return true;
+
+  return false;
+}
 
 type RecipeForFilter = {
   id: string;
@@ -124,12 +268,16 @@ function recipeMatchesDietFilter(recipe: RecipeForFilter, filter: string): boole
 }
 
 export default function Home() {
-  const [nationality, setNationality] = useState<Nationality>("todas");
+  const router = useRouter();
+  const [nationality, setNationality] = useState<string>("todas");
   const [favIds, setFavIds] = useState<string[]>([]);
   const [mounted, setMounted] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [opcionesOpen, setOpcionesOpen] = useState(false);
   const [randomKey, setRandomKey] = useState(0);
+  const [suggestOpen, setSuggestOpen] = useState(false);
+  const [activeSuggestIdx, setActiveSuggestIdx] = useState<number>(-1);
+  const searchWrapRef = useRef<HTMLDivElement | null>(null);
 
   const [filters, setFilters] = useState({
     vegano: false,
@@ -156,6 +304,84 @@ export default function Home() {
         setCommunityRecipes(error ? [] : data || []);
       });
   }, []);
+
+  const searchIndex = useMemo(() => {
+    type StaticRecipe = { id: string; title?: string; ingredients?: { name?: string }[] } & Record<string, any>;
+    const staticRecipes = (recipes as StaticRecipe[]).filter(
+      (r) => !r.id.includes("**") && (r.title ?? "") !== "(Nueva receta)"
+    );
+
+    const recipeSuggestions = [
+      ...staticRecipes.map((r) => ({ kind: "receta" as const, id: r.id, label: String(r.title ?? r.id) })),
+      ...(communityRecipes as any[]).map((r) => ({ kind: "receta" as const, id: String(r.id), label: String(r.title ?? r.id) })),
+    ];
+
+    return {
+      recipes: recipeSuggestions,
+    };
+  }, [communityRecipes]);
+
+  const suggestions = useMemo(() => {
+    const q = normalizeForSearch(searchQuery);
+    if (!q) return [];
+
+    const score = (label: string) => {
+      const nl = normalizeForSearch(label);
+      if (nl === q) return 0;
+      if (nl.startsWith(q)) return 1;
+      const idx = nl.indexOf(q);
+      if (idx >= 0) return 2 + Math.min(idx, 20) / 100;
+      return 999;
+    };
+
+    const raw = [
+      ...searchIndex.recipes.map((r) => ({ ...r, _score: score(r.label) })),
+    ].filter((s) => s._score < 999);
+
+    raw.sort((a, b) => a._score - b._score || a.label.localeCompare(b.label, "es"));
+
+    // evita duplicados por etiqueta (p.ej. misma receta en estático y comunidad)
+    const seen = new Set<string>();
+    const out: Array<{ kind: "receta"; id: string; label: string }> = [];
+    for (const s of raw) {
+      const key = `${s.kind}:${normalizeForSearch(s.label)}`;
+      if (seen.has(key)) continue;
+      seen.add(key);
+      out.push({ kind: "receta", id: (s as any).id, label: s.label });
+      if (out.length >= 8) break;
+    }
+    return out;
+  }, [searchQuery, searchIndex]);
+
+  useEffect(() => {
+    const q = normalizeForSearch(searchQuery);
+    if (!q) {
+      setSuggestOpen(false);
+      setActiveSuggestIdx(-1);
+      return;
+    }
+    setSuggestOpen(suggestions.length > 0);
+    setActiveSuggestIdx((idx) => (idx >= 0 && idx < suggestions.length ? idx : -1));
+  }, [searchQuery, suggestions.length]);
+
+  useEffect(() => {
+    const onDocClick = (e: MouseEvent) => {
+      const el = searchWrapRef.current;
+      if (!el) return;
+      if (!el.contains(e.target as Node)) {
+        setSuggestOpen(false);
+        setActiveSuggestIdx(-1);
+      }
+    };
+    document.addEventListener("mousedown", onDocClick);
+    return () => document.removeEventListener("mousedown", onDocClick);
+  }, []);
+
+  function applySuggestion(s: { kind: "receta"; id: string; label: string }) {
+    setSuggestOpen(false);
+    setActiveSuggestIdx(-1);
+    router.push(`/recipe/${s.id}`);
+  }
 
   const filtered = useMemo(() => {
     type Recipe = {
@@ -202,8 +428,8 @@ export default function Home() {
     }
 
     if (hasSearch) {
-      const q = searchQuery.toLowerCase();
-      list = list.filter((r) => (r.title ?? "").toLowerCase().includes(q));
+      const q = normalizeForSearch(searchQuery);
+      list = list.filter((r) => normalizeForSearch(r.title ?? "").includes(q));
     }
 
     if (nationality === "aleatorio") {
@@ -213,24 +439,66 @@ export default function Home() {
     }
 
     if (nationality !== "todas") {
-      const normFilter = normalizeNationality(nationality);
+      const normFilter = normalizeNationalityForFilter(nationality) || normalizeNationality(nationality);
       list = list.filter(
-        (r) => normalizeNationalityForFilter(r.nationality) === normFilter || normalizeNationality(r.nationality ?? "") === normFilter
+        (r) =>
+          normalizeNationalityForFilter(r.nationality) === normFilter ||
+          normalizeNationality(r.nationality ?? "") === normFilter
       );
     }
 
     return list;
   }, [nationality, filters, searchQuery, randomKey, communityRecipes]);
 
-  const chips: { key: Nationality; label: string }[] = [
-    { key: "todas", label: "Todos" },
-    { key: "espanola", label: "Española" },
-    { key: "arabe", label: "Árabe" },
-    { key: "india", label: "India" },
-    { key: "palestina", label: "Palestina" },
-    { key: "marroqui", label: "Marroquí" },
-    { key: "aleatorio", label: "Aleatorio" },
-  ];
+  const chips = useMemo(() => {
+    // Contamos recetas por nacionalidad (estáticas + comunidad) usando la misma normalización que el filtro.
+    const counts = new Map<string, { count: number; sampleRaw: string }>();
+
+    const addNationality = (rawNationality: unknown) => {
+      const raw = String(rawNationality ?? "").trim();
+      if (!raw) return;
+      const key = normalizeNationalityForFilter(raw) || normalizeNationality(raw);
+      if (!key) return;
+      const prev = counts.get(key);
+      if (prev) {
+        prev.count += 1;
+      } else {
+        counts.set(key, { count: 1, sampleRaw: raw });
+      }
+    };
+
+    // Estáticas (recipes.json)
+    for (const r of (recipes as any[])) {
+      if (!r?.id || String(r.id).includes("**")) continue;
+      if ((r.title ?? "") === "(Nueva receta)") continue;
+      addNationality(r.nationality);
+    }
+
+    // Comunidad (Supabase)
+    for (const r of (communityRecipes as any[])) {
+      addNationality(r?.nationality);
+    }
+
+    const specialLabels: Record<string, string> = {
+      espanola: "España",
+      arabe: "Arabia",
+      marroqui: "Marruecos",
+    };
+
+    const list = Array.from(counts.entries())
+      .map(([key, meta]) => ({
+        key,
+        count: meta.count,
+        label: specialLabels[key] ?? getLabelForNationality(meta.sampleRaw) ?? key,
+      }))
+      .sort((a, b) => b.count - a.count || a.label.localeCompare(b.label, "es"));
+
+    return [
+      { key: "todas", label: "Todos" },
+      ...list.map(({ key, label }) => ({ key, label })),
+      { key: "aleatorio", label: "Aleatorio" },
+    ];
+  }, [communityRecipes]);
 
   return (
     <main className="min-h-screen bg-background max-w-[520px] mx-auto">
@@ -251,15 +519,87 @@ export default function Home() {
 
       {/* Barra de búsqueda */}
       <div className="px-4 pt-4">
-        <div className="relative">
+        <div className="relative" ref={searchWrapRef}>
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
           <Input
             type="search"
             placeholder="¿Qué te apetece cocinar hoy?"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
+            onFocus={() => {
+              if (suggestions.length > 0) setSuggestOpen(true);
+            }}
+            onKeyDown={(e) => {
+              if (!suggestOpen || suggestions.length === 0) {
+                if (e.key === "Escape") {
+                  setSuggestOpen(false);
+                  setActiveSuggestIdx(-1);
+                }
+                return;
+              }
+              if (e.key === "ArrowDown") {
+                e.preventDefault();
+                setActiveSuggestIdx((i) => {
+                  const next = i + 1;
+                  return next >= suggestions.length ? 0 : next;
+                });
+              } else if (e.key === "ArrowUp") {
+                e.preventDefault();
+                setActiveSuggestIdx((i) => {
+                  const next = i - 1;
+                  return next < 0 ? suggestions.length - 1 : next;
+                });
+              } else if (e.key === "Enter") {
+                if (activeSuggestIdx >= 0 && activeSuggestIdx < suggestions.length) {
+                  e.preventDefault();
+                  applySuggestion(suggestions[activeSuggestIdx]);
+                }
+              } else if (e.key === "Escape") {
+                e.preventDefault();
+                setSuggestOpen(false);
+                setActiveSuggestIdx(-1);
+              }
+            }}
             className="pl-9 h-11 rounded-xl bg-white border-border"
+            aria-autocomplete="list"
+            aria-expanded={suggestOpen}
+            aria-controls="taulapp-search-suggestions"
           />
+
+          {suggestOpen && suggestions.length > 0 && (
+            <div
+              id="taulapp-search-suggestions"
+              role="listbox"
+              className="absolute z-50 mt-2 w-full overflow-hidden rounded-2xl border border-border bg-card shadow-lg"
+            >
+              {suggestions.map((s, idx) => {
+                const active = idx === activeSuggestIdx;
+                return (
+                  <button
+                    key={`${s.kind}-${(s as any).id ?? s.label}-${idx}`}
+                    type="button"
+                    role="option"
+                    aria-selected={active}
+                    onMouseEnter={() => setActiveSuggestIdx(idx)}
+                    onMouseDown={(e) => {
+                      // evita perder el foco antes del click
+                      e.preventDefault();
+                    }}
+                    onClick={() => applySuggestion(s)}
+                    className={cn(
+                      "w-full text-left px-3 py-2.5 text-sm flex items-center justify-between gap-3 hover:bg-accent",
+                      active && "bg-accent"
+                    )}
+                  >
+                    <span className="font-medium text-foreground truncate">{s.label}</span>
+                    <span className="text-xs text-muted-foreground shrink-0">
+                      Receta
+                    </span>
+                  </button>
+                );
+              })}
+            </div>
+          )}
         </div>
       </div>
 
@@ -285,7 +625,9 @@ export default function Home() {
                 active && "bg-primary text-primary-foreground"
               )}
             >
-              <span className="mr-1.5">{nationalityFlag[c.key]}</span>
+              <span className="mr-1.5">
+                {nationalityFlag[c.key] ?? getFlagForNationality(c.key) ?? "🌍"}
+              </span>
               {c.label}
             </Button>
           );
@@ -338,7 +680,7 @@ export default function Home() {
           const dietaryTags = (r.tags || []).filter((t: string) => dietaryLabel[t]);
           const showTags = dietaryTags.slice(0, 3);
           const extraCount = dietaryTags.length - 3;
-          const flag = getFlagForNationality(r.nationality) || nationalityFlag[r.nationality as Nationality] || "🌍";
+          const flag = getFlagForNationality(r.nationality) || nationalityFlag[String(r.nationality ?? "")] || "🌍";
 
           return (
             <Card key={r.id} className="relative overflow-hidden rounded-2xl border shadow-sm">

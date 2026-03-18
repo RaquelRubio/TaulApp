@@ -21,6 +21,12 @@ const DIET_TAGS: { id: DietTag; label: string }[] = [
   { id: "sin_lactosa", label: "Sin lactosa" },
 ];
 
+function capitalizeIngredientName(name: string): string {
+  const s = String(name ?? "").trim();
+  if (!s) return "";
+  return s.charAt(0).toUpperCase() + s.slice(1);
+}
+
 function CompartirContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -50,16 +56,115 @@ function CompartirContent() {
       return { name: "", qty: null, unit: null };
     }
 
+    function spanishWordToNumber(s: string): number | null {
+      const t = (s ?? "").toLowerCase().trim();
+      const map: Record<string, number> = {
+        un: 1,
+        uno: 1,
+        una: 1,
+        dos: 2,
+        tres: 3,
+        cuatro: 4,
+        cinco: 5,
+        seis: 6,
+        siete: 7,
+        ocho: 8,
+        nueve: 9,
+        diez: 10,
+      };
+      if (map[t] != null) return map[t];
+      const n = Number.parseInt(t, 10);
+      return Number.isNaN(n) ? null : n;
+    }
+
+    function numberToSpanishWord(n: number, feminine: boolean): string {
+      if (n === 1) return feminine ? "una" : "un";
+      const map: Record<number, string> = {
+        2: "dos",
+        3: "tres",
+        4: "cuatro",
+        5: "cinco",
+        6: "seis",
+        7: "siete",
+        8: "ocho",
+        9: "nueve",
+        10: "diez",
+      };
+      return map[n] ?? String(n);
+    }
+
+    const containerNouns = new Set([
+      "bote",
+      "botes",
+      "lata",
+      "latas",
+      "cuña",
+      "cuñas",
+      "diente",
+      "dientes",
+      "rama",
+      "ramas",
+      "cabeza",
+      "cabezas",
+      "paquete",
+      "paquetes",
+      "sobre",
+      "sobres",
+      "tarro",
+      "tarros",
+      "tubo",
+      "tubos",
+    ]);
+
     // 1) Cantidades textuales tipo "una pizca de sal"
     const pinchMatch = raw.match(/^(una\s+pizca|un\s+pizca|pizca|una\s+punta|un\s+chorrito|chorrito)\s+de\s+(.+)$/i);
     if (pinchMatch) {
       const unitText = pinchMatch[1].toLowerCase();
-      const name = pinchMatch[2].trim();
+      const name = capitalizeIngredientName(pinchMatch[2].trim());
       return {
         name,
         qty: null,
         unit: unitText,
       };
+    }
+
+    // 1.5) Cantidad + "envase/pieza" + (de) + ingrediente
+    // Ej: "2 botes de corazones de alcachofas" -> name: "corazones de alcachofas", unit: "dos botes"
+    // Ej: "1 cuña de Grana Padano" -> name: "Grana Padano", unit: "una cuña"
+    const containerMatch = raw.match(/^(un|uno|una|dos|tres|cuatro|cinco|seis|siete|ocho|nueve|diez|\d+)\s+([a-záéíóúñ]+(?:\s+[a-záéíóúñ]+)?)\s+(?:de\s+)?(.+)$/i);
+    if (containerMatch) {
+      const qtyToken = containerMatch[1] ?? "";
+      const containerRaw = (containerMatch[2] ?? "").trim();
+      const rest = (containerMatch[3] ?? "").trim();
+
+      const containerNorm = containerRaw.toLowerCase();
+      if (containerNouns.has(containerNorm)) {
+        const n = spanishWordToNumber(qtyToken);
+        const feminine = containerNorm.endsWith("a") || containerNorm.endsWith("as");
+        const word = n != null ? numberToSpanishWord(n, feminine) : qtyToken.toLowerCase();
+
+        const singularContainer =
+          containerNorm.endsWith("s") ? containerRaw.slice(0, -1) : containerRaw;
+        const pluralContainer =
+          containerNorm.endsWith("s") ? containerRaw : `${containerRaw}s`;
+        const containerForm = n === 1 ? singularContainer : pluralContainer;
+
+        return {
+          name: capitalizeIngredientName(rest),
+          qty: null,
+          unit: `${word} ${containerForm}`.replace(/\s+/g, " ").trim(),
+        };
+      }
+    }
+
+    // 1.6) Cantidad simple + ingrediente (sin unidad) "1 limón" / "un limón"
+    const simpleCountMatch = raw.match(/^(un|uno|una|dos|tres|cuatro|cinco|seis|siete|ocho|nueve|diez|\d+)\s+(.+)$/i);
+    if (simpleCountMatch) {
+      const n = spanishWordToNumber(simpleCountMatch[1] ?? "");
+      const name = capitalizeIngredientName((simpleCountMatch[2] ?? "").trim());
+      if (n != null && name) {
+        return { name, qty: n, unit: null };
+      }
     }
 
     // 2) Soportar líneas tipo "200g de arroz redondo" o "200 g arroz redondo"
@@ -69,7 +174,7 @@ function CompartirContent() {
     const m = raw.match(qtyUnitName);
     if (m) {
       const qtyRaw = (m[1] ?? "").trim();
-      const name = (m[3] ?? "").trim();
+      const name = capitalizeIngredientName((m[3] ?? "").trim());
       let qty: number | null = null;
       if (qtyRaw.includes("/")) {
         const [a, b] = qtyRaw.split("/");
@@ -149,16 +254,16 @@ function CompartirContent() {
         }
         const unit = (mRight[2] ?? "").trim() || null;
         return {
-          name: left,
+          name: capitalizeIngredientName(left),
           qty,
           unit,
         };
       }
     }
 
-    // 4) Sin cantidad reconocible: solo nombre, cantidad "al gusto"
+    // 4) Sin cantidad reconocible: mostramos "al gusto"
     return {
-      name: raw,
+      name: capitalizeIngredientName(raw),
       qty: null,
       unit: "al gusto",
     };
@@ -216,6 +321,7 @@ function CompartirContent() {
                     }
                     return `${qtyText} ${name}`.trim();
                   }
+                  if (unit) return `${unit} ${name}`.trim();
                   return name;
                 })
                 .join("\n")

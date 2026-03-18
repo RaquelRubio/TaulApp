@@ -99,10 +99,23 @@ export default function NosotrasPage() {
 
   useEffect(() => {
     const hash = typeof window !== "undefined" ? window.location.hash.slice(1) : "";
+    if (!hash) return;
+
+    // Equipo (team.json): #person-<id> abre la ficha del equipo.
     const personId = hash.startsWith("person-") ? hash.replace("person-", "") : null;
     if (personId && team.some((p) => p.id === personId)) {
       setOpenSectionId(personId);
       const el = document.getElementById(`person-${personId}`);
+      if (el) setTimeout(() => el.scrollIntoView({ behavior: "smooth", block: "start" }), 300);
+      return;
+    }
+
+    // Comunidad (Supabase): #community-<authorId> abre la ficha de esa persona.
+    const communityId = hash.startsWith("community-") ? hash.replace("community-", "") : null;
+    if (communityId) {
+      const cookSectionId = `community-${communityId}`;
+      setOpenSectionId(cookSectionId);
+      const el = document.getElementById(cookSectionId);
       if (el) setTimeout(() => el.scrollIntoView({ behavior: "smooth", block: "start" }), 300);
     }
   }, []);
@@ -327,6 +340,7 @@ export default function NosotrasPage() {
                 return (
                   <li
                     key={cook.authorId}
+                    id={cookSectionId}
                     className="border border-border rounded-[var(--radius)] overflow-hidden bg-card scroll-mt-4"
                   >
                     <button

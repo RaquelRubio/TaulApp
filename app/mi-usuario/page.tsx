@@ -49,6 +49,41 @@ function MiUsuarioContent() {
   const [deleteError, setDeleteError] = useState<string | null>(null);
   const [deleteMessage, setDeleteMessage] = useState<string | null>(null);
 
+  function getRandomAvatarColor(): string {
+    const colors = ["#FEF3C7", "#E0F2FE", "#ECFDF3", "#FCE7F3", "#F5F3FF"];
+    return colors[Math.floor(Math.random() * colors.length)];
+  }
+
+  function getRandomDefaultEmoji(): string {
+    const emojis = [
+      "🍅",
+      "🥑",
+      "🥕",
+      "🌽",
+      "🥔",
+      "🍞",
+      "🧀",
+      "🥚",
+      "🥗",
+      "🍝",
+      "🍕",
+      "🌮",
+      "🍣",
+      "🍛",
+      "🍜",
+      "🍲",
+      "🍰",
+      "🍫",
+      "🍓",
+      "🍉",
+      "🍌",
+      "🍇",
+      "🍒",
+      "☕️",
+    ];
+    return emojis[Math.floor(Math.random() * emojis.length)];
+  }
+
   useEffect(() => {
     if (loading) return;
     if (!user) {
@@ -89,7 +124,8 @@ function MiUsuarioContent() {
         setDisplayName(finalName);
         setPhone((meta.phone ?? "") || "");
         setBio((meta.bio ?? "") || "");
-        const loadedEmojiValue = (meta.avatar_emoji ?? "🥦") || "🥦";
+        const storedEmoji = (meta.avatar_emoji ?? "").trim();
+        const loadedEmojiValue = storedEmoji || getRandomDefaultEmoji();
         setEmoji(loadedEmojiValue);
         setLoadedEmoji(loadedEmojiValue);
 
@@ -97,9 +133,7 @@ function MiUsuarioContent() {
         if (storedColor) {
           setAvatarColor(storedColor);
         } else {
-          const colors = ["#FEF3C7", "#E0F2FE", "#ECFDF3", "#FCE7F3", "#F5F3FF"];
-          const randomColor = colors[Math.floor(Math.random() * colors.length)];
-          setAvatarColor(randomColor);
+          setAvatarColor(getRandomAvatarColor());
         }
       } catch (e) {
         console.error("Error cargando perfil", e);
@@ -186,12 +220,15 @@ function MiUsuarioContent() {
     const cleanEmail = email.trim().toLowerCase();
     const cleanPhone = phone.trim();
     const cleanBio = bio.trim();
-    const cleanEmoji = (emoji || "🥦").trim() || "🥦";
+    const rawEmoji = (emoji ?? "").trim();
+    const cleanEmoji = rawEmoji || getRandomDefaultEmoji();
+    if (rawEmoji !== cleanEmoji) {
+      setEmoji(cleanEmoji);
+    }
 
     let nextAvatarColor = avatarColor;
-    if (cleanEmoji !== loadedEmoji) {
-      const colors = ["#FEF3C7", "#E0F2FE", "#ECFDF3", "#FCE7F3", "#F5F3FF"];
-      nextAvatarColor = colors[Math.floor(Math.random() * colors.length)];
+    if (cleanEmoji !== loadedEmoji || !rawEmoji) {
+      nextAvatarColor = getRandomAvatarColor();
       setAvatarColor(nextAvatarColor);
       setLoadedEmoji(cleanEmoji);
     }

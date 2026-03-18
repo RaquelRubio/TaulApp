@@ -73,6 +73,234 @@ const BRAND_DESCRIPTIONS: Record<string, { category: string; categoryEmoji: stri
 
 type RecCategory = keyof typeof RECOMMENDATION_OPTIONS;
 
+function capitalizeIngredientName(name: string): string {
+  const s = String(name ?? "").trim();
+  if (!s) return "";
+  return s.charAt(0).toUpperCase() + s.slice(1);
+}
+
+function coerceIngredients(value: unknown): any[] {
+  function parseLegacyIngredientLine(line: string): { name: string; qty: number | null; unit: string | null } {
+    const l = String(line ?? "").trim();
+    if (!l) return { name: "", qty: null, unit: null };
+
+    function spanishWordToNumber(s: string): number | null {
+      const t = (s ?? "").toLowerCase().trim();
+      const map: Record<string, number> = {
+        un: 1,
+        uno: 1,
+        una: 1,
+        dos: 2,
+        tres: 3,
+        cuatro: 4,
+        cinco: 5,
+        seis: 6,
+        siete: 7,
+        ocho: 8,
+        nueve: 9,
+        diez: 10,
+      };
+      if (map[t] != null) return map[t];
+      const n = Number.parseInt(t, 10);
+      return Number.isNaN(n) ? null : n;
+    }
+
+    function numberToSpanishWord(n: number, feminine: boolean): string {
+      if (n === 1) return feminine ? "una" : "un";
+      const map: Record<number, string> = {
+        2: "dos",
+        3: "tres",
+        4: "cuatro",
+        5: "cinco",
+        6: "seis",
+        7: "siete",
+        8: "ocho",
+        9: "nueve",
+        10: "diez",
+      };
+      return map[n] ?? String(n);
+    }
+
+    const containerNouns = new Set([
+      "bote",
+      "botes",
+      "lata",
+      "latas",
+      "cuña",
+      "cuñas",
+      "diente",
+      "dientes",
+      "rama",
+      "ramas",
+      "cabeza",
+      "cabezas",
+      "paquete",
+      "paquetes",
+      "sobre",
+      "sobres",
+      "tarro",
+      "tarros",
+      "tubo",
+      "tubos",
+    ]);
+
+    const pinchMatch = l.match(/^(una\s+pizca|un\s+pizca|pizca|una\s+punta|un\s+chorrito|chorrito)\s+de\s+(.+)$/i);
+    if (pinchMatch) {
+      return { name: pinchMatch[2].trim(), qty: null, unit: pinchMatch[1].toLowerCase() };
+    }
+
+    const containerMatch = l.match(/^(un|uno|una|dos|tres|cuatro|cinco|seis|siete|ocho|nueve|diez|\d+)\s+([a-záéíóúñ]+(?:\s+[a-záéíóúñ]+)?)\s+(?:de\s+)?(.+)$/i);
+    if (containerMatch) {
+      const qtyToken = containerMatch[1] ?? "";
+      const containerRaw = (containerMatch[2] ?? "").trim();
+      const rest = (containerMatch[3] ?? "").trim();
+      const containerNorm = containerRaw.toLowerCase();
+      if (containerNouns.has(containerNorm)) {
+        const n = spanishWordToNumber(qtyToken);
+        const feminine = containerNorm.endsWith("a") || containerNorm.endsWith("as");
+        const word = n != null ? numberToSpanishWord(n, feminine) : qtyToken.toLowerCase();
+        const singularContainer = containerNorm.endsWith("s") ? containerRaw.slice(0, -1) : containerRaw;
+        const pluralContainer = containerNorm.endsWith("s") ? containerRaw : `${containerRaw}s`;
+        const containerForm = n === 1 ? singularContainer : pluralContainer;
+        return { name: rest, qty: null, unit: `${word} ${containerForm}`.replace(/\s+/g, " ").trim() };
+      }
+    }
+
+    const simpleCountMatch = l.match(/^(un|uno|una|dos|tres|cuatro|cinco|seis|siete|ocho|nueve|diez|\d+)\s+(.+)$/i);
+    if (simpleCountMatch) {
+      const n = spanishWordToNumber(simpleCountMatch[1] ?? "");
+      const name = (simpleCountMatch[2] ?? "").trim();
+      if (n != null && name) return { name, qty: n, unit: null };
+    }
+
+    const qtyUnitName =
+      /^(\d+(?:[.,]\d+)?|\d+\/\d+)\s*(g|gr|gramos|kg|ml|l|ud|uds|unidad(?:es)?|cda|cdas|cdita|cdta|taza|tazas)?\b(?:\s+de)?\s+(.+)$/i;
+    const m = l.match(qtyUnitName);
+    if (m) {
+      const qtyRaw = (m[1] ?? "").trim();
+      const name = (m[3] ?? "").trim();
+      let qty: number | null = null;
+      if (qtyRaw.includes("/")) {
+        const [a, b] = qtyRaw.split("/");
+        const na = Number.parseFloat(a.replace(",", "."));
+        const nb = Number.parseFloat(b.replace(",", "."));
+        qty = !Number.isNaN(na) && !Number.isNaN(nb) && nb !== 0 ? na / nb : null;
+      } else {
+        const n = Number.parseFloat(qtyRaw.replace(",", "."));
+        qty = Number.isNaN(n) ? null : n;
+      }
+
+      const unitRaw = (m[2] ?? "").toLowerCase();
+      let unit: string | null = null;
+      switch (unitRaw) {
+        case "g":
+        case "gr":
+        case "gramos":
+          unit = "g";
+          break;
+        case "kg":
+          unit = "kg";
+          break;
+        case "ml":
+          unit = "ml";
+          break;
+        case "l":
+          unit = "l";
+          break;
+        case "ud":
+        case "uds":
+        case "unidad":
+        case "unidades":
+          unit = "ud";
+          break;
+        case "cda":
+        case "cdas":
+          unit = "cda";
+          break;
+        case "cdita":
+        case "cdta":
+          unit = "cdita";
+          break;
+        case "taza":
+        case "tazas":
+          unit = "taza";
+          break;
+        default:
+          unit = unitRaw || null;
+      }
+      return { name, qty, unit };
+    }
+
+    const dashSplit = l.split("–");
+    if (dashSplit.length === 2) {
+      const left = dashSplit[0].trim();
+      const right = dashSplit[1].trim();
+      const m2 = right.match(/^(\d+(?:[.,]\d+)?|\d+\/\d+)\s*(.*)$/i);
+      if (m2) {
+        const qtyRaw = (m2[1] ?? "").trim();
+        let qty: number | null = null;
+        if (qtyRaw.includes("/")) {
+          const [a, b] = qtyRaw.split("/");
+          const na = Number.parseFloat(a.replace(",", "."));
+          const nb = Number.parseFloat(b.replace(",", "."));
+          qty = !Number.isNaN(na) && !Number.isNaN(nb) && nb !== 0 ? na / nb : null;
+        } else {
+          const n = Number.parseFloat(qtyRaw.replace(",", "."));
+          qty = Number.isNaN(n) ? null : n;
+        }
+        const unit = (m2[2] ?? "").trim() || null;
+        return { name: left, qty, unit };
+      }
+    }
+
+    return { name: l, qty: null, unit: "al gusto" };
+  }
+
+  function normalizeOne(ing: any): any {
+    if (typeof ing === "string") return parseLegacyIngredientLine(ing);
+    if (ing && typeof ing === "object") {
+      const nameRaw = String((ing as any).name ?? "").trim();
+      const qty = (ing as any).qty;
+      const unit = (ing as any).unit;
+      const shouldReparse =
+        nameRaw.length > 0 &&
+        (qty === null || qty === undefined || Number.isNaN(Number(qty))) &&
+        (unit === null || unit === undefined || String(unit).trim() === "" || String(unit).trim().toLowerCase() === "al gusto") &&
+        (/\d/.test(nameRaw) || /^\s*(un|uno|una|dos|tres|cuatro|cinco|seis|siete|ocho|nueve|diez)\b/i.test(nameRaw));
+      if (shouldReparse) {
+        const parsed = parseLegacyIngredientLine(nameRaw);
+        return { ...(ing as any), ...parsed };
+      }
+      return ing;
+    }
+    return null;
+  }
+
+  if (!value) return [];
+
+  if (Array.isArray(value)) {
+    return value.map(normalizeOne).filter(Boolean);
+  }
+
+  if (typeof value === "string") {
+    try {
+      const parsed = JSON.parse(value);
+      if (Array.isArray(parsed)) return parsed.map(normalizeOne).filter(Boolean);
+      return [];
+    } catch {
+      const raw = value.trim();
+      if (!raw) return [];
+      const parts = raw
+        .split(/\n|,|;/g)
+        .map((x) => x.trim())
+        .filter(Boolean);
+      return parts.map(parseLegacyIngredientLine).filter((x) => x.name.trim().length > 0);
+    }
+  }
+
+  return [];
+}
+
 function getCategory(ingKey: string, ingName: string): RecCategory | null {
   const k = (ingKey ?? "").toLowerCase().trim();
   const n = (ingName ?? "").toLowerCase().trim();
@@ -236,7 +464,13 @@ function RecipeContent({
       .maybeSingle()
       .then(({ data, error }) => {
         if (cancelled) return;
-        setDbRecipe(error ? null : data ?? null);
+        if (error || !data) {
+          setDbRecipe(null);
+        } else {
+          const next = { ...(data as any) };
+          next.ingredients = coerceIngredients((data as any).ingredients);
+          setDbRecipe(next);
+        }
         setLoadingDbRecipe(false);
       });
     return () => {
@@ -479,7 +713,7 @@ function RecipeContent({
 
         const qtyText =
         scaledQty === null
-          ? (ing.unit || "al gusto")
+          ? (String(ing.unit ?? "").trim() || "al gusto")
           : `${formatQuantity(scaledQty)} ${ing.unit || ""}`.trim();
         const category = getCategory(ing.key ?? "", ing.name ?? "");
         const recommendation = (category && rotatedRecommendations[category]) ?? getStableIngredientRecommendation(ing.key ?? "", ing.name ?? "");
@@ -501,7 +735,7 @@ function RecipeContent({
           className="flex justify-between items-start gap-3 border-b border-border/60 pb-3 last:border-0"
         >
           <div>
-            <p className="font-semibold text-foreground">{ing.name}</p>
+            <p className="font-semibold text-foreground">{capitalizeIngredientName(ing.name)}</p>
             {dietaryNote && (
               <p className="text-xs text-muted-foreground mt-0.5 italic">
                 {dietaryNote}
@@ -614,41 +848,51 @@ function RecipeContent({
             <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-2">
               Receta compartida por
             </p>
-            <div className="flex items-center gap-3 p-3 rounded-xl bg-muted/50 border border-transparent">
-              {(() => {
-                const rawName =
-                  (recipe as { author_display_name?: string | null }).author_display_name ??
-                  "Persona de la comunidad";
-                const safeName = String(rawName).trim() || "Persona de la comunidad";
+            {(() => {
+              const authorId = (recipe as { author_id?: string | null }).author_id ?? null;
+              const rawName =
+                (recipe as { author_display_name?: string | null }).author_display_name ??
+                "Persona de la comunidad";
+              const safeName = String(rawName).trim() || "Persona de la comunidad";
 
-                // Si es la receta de la usuaria actual, usamos su emoji de perfil
-                const isCurrentUserAuthor =
-                  !!user && user.id === (recipe as { author_id?: string | null }).author_id;
-                const meta = (user as unknown as { user_metadata?: { avatar_emoji?: string | null } | null })?.user_metadata ?? {};
-                const avatarEmoji = isCurrentUserAuthor
-                  ? ((meta as { avatar_emoji?: string | null }).avatar_emoji || "🥦")
-                  : null;
+              // Si es la receta de la usuaria actual, usamos su emoji de perfil
+              const isCurrentUserAuthor = !!authorId && !!user && user.id === authorId;
+              const avatarEmoji = isCurrentUserAuthor
+                ? (user?.user_metadata?.avatar_emoji || "🥦")
+                : null;
 
-                const initial = safeName.charAt(0).toUpperCase() || "C";
+              const fallbackEmoji = "👩🏻‍🍳";
 
+              const content = (
+                <>
+                  <span className="relative w-12 h-12 rounded-full overflow-hidden bg-muted shrink-0 flex items-center justify-center text-2xl">
+                    {avatarEmoji ? (
+                      <span aria-hidden>{avatarEmoji}</span>
+                    ) : (
+                      <span aria-hidden>{fallbackEmoji}</span>
+                    )}
+                  </span>
+                  <span className="font-medium text-foreground">{safeName}</span>
+                </>
+              );
+
+              if (!authorId) {
                 return (
-                  <>
-                    <span className="relative w-12 h-12 rounded-full overflow-hidden bg-muted shrink-0 flex items-center justify-center text-2xl">
-                      {avatarEmoji ? (
-                        <span aria-hidden>{avatarEmoji}</span>
-                      ) : (
-                        <span aria-hidden className="text-lg font-semibold">
-                          {initial}
-                        </span>
-                      )}
-                    </span>
-                    <span className="font-medium text-foreground">
-                      {safeName}
-                    </span>
-                  </>
+                  <div className="flex items-center gap-3 p-3 rounded-xl bg-muted/50 border border-transparent">
+                    {content}
+                  </div>
                 );
-              })()}
-            </div>
+              }
+
+              return (
+                <Link
+                  href={`/nosotras#community-${authorId}`}
+                  className="flex items-center gap-3 p-3 rounded-xl bg-muted/50 hover:bg-muted border border-transparent hover:border-border/60 transition-colors"
+                >
+                  {content}
+                </Link>
+              );
+            })()}
           </section>
         )}
 

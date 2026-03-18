@@ -243,8 +243,8 @@ const LEGACY_NATIONALITY_TO_CODE: Record<string, string> = {
   palestina: "PS",
   marroquí: "MA",
   marroqui: "MA",
-  arabe: "MA",
-  árabe: "MA",
+  arabe: "SA",
+  árabe: "SA",
 };
 
 /** Claves de filtro usadas en la home (pills). Permite que "España" y "española" coincidan. */
@@ -288,4 +288,31 @@ export function getFlagForNationality(nationality: string | null | undefined): s
   );
   if (partial) return countryCodeToFlag(partial.code);
   return "🌍";
+}
+
+/**
+ * Devuelve una etiqueta “humana” para mostrar en chips/filtros.
+ * Acepta nombre de país ("Italia"), código ISO ("IT") o valores legacy ("española").
+ */
+export function getLabelForNationality(nationality: string | null | undefined): string {
+  const raw = String(nationality ?? "").trim();
+  if (!raw) return "";
+
+  const norm = normalizeForSearch(raw);
+  const legacyCode = LEGACY_NATIONALITY_TO_CODE[norm];
+  const code = legacyCode ?? (raw.length === 2 ? raw.toUpperCase() : null);
+
+  if (code) {
+    const byCode = COUNTRIES.find((c) => c.code.toUpperCase() === code);
+    if (byCode) return byCode.name;
+  }
+
+  const byName = COUNTRIES.find((c) => normalizeForSearch(c.name) === norm);
+  if (byName) return byName.name;
+
+  const partial = COUNTRIES.find((c) => normalizeForSearch(c.name).includes(norm));
+  if (partial) return partial.name;
+
+  // Fallback: capitaliza sin inventar acentos.
+  return raw.charAt(0).toUpperCase() + raw.slice(1);
 }
