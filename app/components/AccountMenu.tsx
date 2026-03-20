@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { LogOut, User, Share2 } from "lucide-react";
+import { LogOut, User, Share2, X } from "lucide-react";
 import { useEffect, useState } from "react";
 import { supabase } from "../lib/supabaseClient";
 import { useSupabaseAuth } from "../lib/useSupabaseAuth";
@@ -12,6 +12,8 @@ export default function AccountMenu() {
   const { user, loading } = useSupabaseAuth();
   const router = useRouter();
   const [open, setOpen] = useState(false);
+  const [confirmSignOutOpen, setConfirmSignOutOpen] = useState(false);
+  const [signingOut, setSigningOut] = useState(false);
   const [displayName, setDisplayName] = useState("");
   const [avatarEmoji, setAvatarEmoji] = useState("🥦");
 
@@ -158,16 +160,69 @@ export default function AccountMenu() {
             </button>
             <button
               type="button"
-              onClick={async () => {
-                await supabase.auth.signOut();
+              onClick={() => {
                 setOpen(false);
-                router.push("/");
+                setConfirmSignOutOpen(true);
               }}
               className="flex items-center gap-2 w-full px-3 py-2.5 text-left text-sm font-medium text-destructive hover:bg-accent"
             >
               <LogOut className="h-4 w-4" />
               Cerrar sesión
             </button>
+          </div>
+        </div>
+      )}
+      {confirmSignOutOpen && (
+        <div className="fixed inset-0 z-[60] flex items-center justify-center p-4">
+          <button
+            type="button"
+            aria-label="Cerrar modal"
+            className="absolute inset-0 bg-black/40"
+            onClick={() => {
+              if (!signingOut) setConfirmSignOutOpen(false);
+            }}
+          />
+          <div className="relative w-full max-w-sm rounded-2xl border border-border bg-card p-4 shadow-xl">
+            <button
+              type="button"
+              aria-label="Cerrar"
+              className="absolute right-3 top-3 inline-flex h-8 w-8 items-center justify-center rounded-md text-muted-foreground hover:bg-accent hover:text-foreground disabled:opacity-60"
+              disabled={signingOut}
+              onClick={() => setConfirmSignOutOpen(false)}
+            >
+              <X className="h-4 w-4" />
+            </button>
+            <h2 className="text-base font-semibold text-foreground">Cerrar sesión</h2>
+            <p className="mt-2 text-sm text-muted-foreground">
+              Estás apunto de cerrar sesión. ¡Nos vemos pronto!
+            </p>
+            <div className="mt-4 flex items-center justify-end gap-2">
+              <button
+                type="button"
+                className="h-10 px-4 rounded-lg border border-border text-sm font-medium hover:bg-accent disabled:opacity-60"
+                disabled={signingOut}
+                onClick={() => setConfirmSignOutOpen(false)}
+              >
+                Cancelar
+              </button>
+              <button
+                type="button"
+                className="h-10 px-4 rounded-lg bg-destructive text-destructive-foreground text-sm font-semibold hover:opacity-90 disabled:opacity-60"
+                disabled={signingOut}
+                onClick={async () => {
+                  try {
+                    setSigningOut(true);
+                    await supabase.auth.signOut();
+                    setConfirmSignOutOpen(false);
+                    router.push("/");
+                  } finally {
+                    setSigningOut(false);
+                  }
+                }}
+              >
+                {signingOut ? "Cerrando..." : "Aceptar"}
+              </button>
+            </div>
           </div>
         </div>
       )}
