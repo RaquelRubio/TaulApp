@@ -192,7 +192,7 @@ export default function AccountMenu() {
             >
               <X className="h-4 w-4" />
             </button>
-            <h2 className="text-base font-semibold text-foreground text-center">Hasa luego</h2>
+            <h2 className="text-base font-semibold text-foreground text-center">Hasta luego 👋</h2>
             <p className="mt-2 text-sm text-muted-foreground">
               Estás apunto de cerrar sesión. ¡Nos vemos pronto!
             </p>
