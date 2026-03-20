@@ -19,7 +19,7 @@ export default function AuthCallbackPage() {
         for (let attempt = 1; attempt <= maxAttempts; attempt++) {
           const { data } = await supabase.auth.getSession();
           if (data.session) {
-            router.replace("/dashboard");
+            router.replace("/");
             return;
           }
 
