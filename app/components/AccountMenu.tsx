@@ -192,11 +192,11 @@ export default function AccountMenu() {
             >
               <X className="h-4 w-4" />
             </button>
-            <h2 className="text-base font-semibold text-foreground">Cerrar sesión</h2>
+            <h2 className="text-base font-semibold text-foreground text-center">Hasa luego</h2>
             <p className="mt-2 text-sm text-muted-foreground">
               Estás apunto de cerrar sesión. ¡Nos vemos pronto!
             </p>
-            <div className="mt-4 flex items-center justify-end gap-2">
+            <div className="mt-4 flex items-center justify-center gap-2">
               <button
                 type="button"
                 className="h-10 px-4 rounded-lg border border-border text-sm font-medium hover:bg-accent disabled:opacity-60"
@@ -207,7 +207,7 @@ export default function AccountMenu() {
               </button>
               <button
                 type="button"
-                className="h-10 px-4 rounded-lg bg-destructive text-destructive-foreground text-sm font-semibold hover:opacity-90 disabled:opacity-60"
+                className="h-10 px-4 rounded-lg bg-destructive text-white text-sm font-semibold hover:opacity-90 disabled:opacity-60"
                 disabled={signingOut}
                 onClick={async () => {
                   try {
