@@ -9,5 +9,12 @@ if (!supabaseUrl || !supabaseAnonKey) {
   );
 }
 
-export const supabase = createClient(supabaseUrl, supabaseAnonKey);
+export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
+  auth: {
+    flowType: "pkce",
+    // Permite que `supabase.auth.getSession()` detecte y complete el callback
+    // cuando la URL contiene el parámetro `code` del OAuth.
+    detectSessionInUrl: true,
+  },
+});
 

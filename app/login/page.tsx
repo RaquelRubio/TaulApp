@@ -17,6 +17,7 @@ function LoginContent() {
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [loadingGoogle, setLoadingGoogle] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [info, setInfo] = useState<string | null>(null);
   const [cooldown, setCooldown] = useState(0);
@@ -76,6 +77,35 @@ function LoginContent() {
     router.push(redirectTo);
   }
 
+  async function handleGoogleLogin() {
+    setError(null);
+    setInfo(null);
+    setLoadingGoogle(true);
+    try {
+      const origin = window.location.origin;
+      const callbackUrl = `${origin}/auth/callback`;
+      const { error } = await supabase.auth.signInWithOAuth({
+        provider: "google",
+        options: {
+          redirectTo: callbackUrl,
+        },
+      });
+      if (error) {
+        console.error("signInWithOAuth google error", error);
+        setError(
+          error.message ||
+            "No se ha podido iniciar sesión con Google. Inténtalo de nuevo."
+        );
+        setLoadingGoogle(false);
+      }
+      // Si no hay error, Supabase redirige fuera de la app: no hace falta cambiar estados.
+    } catch (e) {
+      console.error("signInWithOAuth google unexpected error", e);
+      setError("No se ha podido iniciar sesión con Google. Inténtalo de nuevo.");
+      setLoadingGoogle(false);
+    }
+  }
+
   async function handleResetPassword() {
     if (!email) {
       setError("Escribe tu email para poder enviarte el enlace de recuperación.");
@@ -130,6 +160,23 @@ function LoginContent() {
         <p className="text-sm text-muted-foreground mb-4">
           Entra para guardar tus propias recetas y acceder a ellas desde cualquier dispositivo.
         </p>
+
+        <div className="mb-5">
+          <Button
+            type="button"
+            variant="outline"
+            className="w-full h-11 rounded-xl font-semibold"
+            disabled={loadingGoogle || loading}
+            onClick={handleGoogleLogin}
+          >
+            {loadingGoogle ? "Conectando con Google..." : "Continuar con Google"}
+          </Button>
+          <div className="flex items-center gap-3 my-4">
+            <div className="h-px bg-border flex-1" />
+            <span className="text-xs text-muted-foreground">o</span>
+            <div className="h-px bg-border flex-1" />
+          </div>
+        </div>
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-1.5">
