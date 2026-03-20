@@ -6,11 +6,12 @@ import { use, useMemo, useState, useEffect, useRef, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import recipes from "../../data/recipes.json";
 import teamData from "../../data/team.json";
-import { Copy, MessageCircle } from "lucide-react";
+import { Copy, MessageCircle, Star } from "lucide-react";
 import { supabase } from "../../lib/supabaseClient";
 import { useSupabaseAuth } from "../../lib/useSupabaseAuth";
 import { getRecipeImageUrl, getRecipeImageUrls } from "../../lib/recipeImages";
 import { RecipeImageCarousel } from "../../components/RecipeImageCarousel";
+import { isFavorite, toggleFavorite } from "../../lib/favorites";
 
 type TeamMember = { id: string; name: string; image?: string; bio: string; recipeIds: string[] };
 const team = teamData as TeamMember[];
@@ -430,10 +431,17 @@ function RecipeContent({
   const shareRef = useRef<HTMLDivElement>(null);
   const [dbRecipe, setDbRecipe] = useState<any | null>(null);
   const [loadingDbRecipe, setLoadingDbRecipe] = useState(false);
+  const [favorite, setFavorite] = useState(false);
+  const [favoritesReady, setFavoritesReady] = useState(false);
   const { user } = useSupabaseAuth();
 
   useEffect(() => {
     if (typeof window !== "undefined") setShareUrl(window.location.href);
+  }, [id]);
+
+  useEffect(() => {
+    setFavorite(isFavorite(id));
+    setFavoritesReady(true);
   }, [id]);
 
   useEffect(() => {
@@ -642,9 +650,31 @@ function RecipeContent({
 
       <div className="px-4 pb-8">
         {/* Título y metadata */}
-        <h1 className="text-2xl font-black mt-4 mb-1 text-foreground">
-          {recipe.title ?? (recipe as { name?: string }).name}
-        </h1>
+        <div className="mt-4 mb-1 flex items-start justify-between gap-3">
+          <h1 className="text-2xl font-black text-foreground">
+            {recipe.title ?? (recipe as { name?: string }).name}
+          </h1>
+          {favoritesReady && (
+            <button
+              type="button"
+              onClick={() => {
+                const next = toggleFavorite(recipe.id);
+                setFavorite(next.includes(recipe.id));
+              }}
+              className="shrink-0 inline-flex items-center justify-center w-9 h-9 rounded-full border border-border bg-card hover:bg-accent transition-colors"
+              aria-label={favorite ? "Quitar de favoritos" : "Guardar en favoritos"}
+              title={favorite ? "Quitar de favoritos" : "Guardar en favoritos"}
+            >
+              <Star
+                className={
+                  favorite
+                    ? "h-4 w-4 fill-amber-400 text-amber-500"
+                    : "h-4 w-4 fill-none text-muted-foreground"
+                }
+              />
+            </button>
+          )}
+        </div>
         <div className="flex items-center gap-4 text-sm text-muted-foreground mb-3">
           <span className="flex items-center gap-1.5">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
