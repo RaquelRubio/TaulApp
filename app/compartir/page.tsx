@@ -10,15 +10,60 @@ import { Input } from "../components/ui/input";
 import { Button } from "../components/ui/button";
 import { NationalityAutocomplete } from "../components/NationalityAutocomplete";
 
-type DietTag = "vegano" | "vegetariano" | "halal" | "kosher" | "sin_gluten" | "sin_lactosa";
+type RecipeTag =
+  | "vegano"
+  | "vegetariano"
+  | "pescetariano"
+  | "sin_frutos_secos"
+  | "alta_proteina"
+  | "halal"
+  | "kosher"
+  | "sin_gluten"
+  | "sin_lactosa"
+  | "dulce"
+  | "salado"
+  | "picante"
+  | "muy_picante"
+  | "acido"
+  | "agridulce";
 
-const DIET_TAGS: { id: DietTag; label: string }[] = [
+const DIET_TAGS: { id: RecipeTag; label: string }[] = [
   { id: "vegano", label: "Vegano" },
   { id: "vegetariano", label: "Vegetariano" },
+  { id: "pescetariano", label: "Pescetariano" },
+  { id: "sin_frutos_secos", label: "Sin frutos secos" },
+  { id: "alta_proteina", label: "Alta en proteína" },
   { id: "halal", label: "Halal" },
   { id: "kosher", label: "Kosher" },
   { id: "sin_gluten", label: "Sin gluten" },
   { id: "sin_lactosa", label: "Sin lactosa" },
+];
+
+const FLAVOR_TAGS: { id: RecipeTag; label: string }[] = [
+  { id: "dulce", label: "Dulce" },
+  { id: "salado", label: "Salado" },
+  { id: "picante", label: "Picante" },
+  { id: "muy_picante", label: "Muy picante" },
+  { id: "acido", label: "Ácido" },
+  { id: "agridulce", label: "Agridulce" },
+];
+
+const STORAGE_TIPS: string[] = [
+  "La mayor parte de las recetas aguanta perfectamente 3-4 días en la nevera en recipiente hermético.",
+  "Si lleva patata, mejor no congelar porque cambia la textura.",
+  "La carne cocinada puede mantenerse congelada 2-3 meses sin perder demasiada calidad.",
+  "La espinaca fresca aguanta poco (2-3 días en nevera), pero cocinada puede congelarse en porciones.",
+  "Congela en porciones y etiqueta con fecha.",
+  "Enfría antes de guardar (máx. 2 h a temperatura ambiente).",
+  "Al recalentar, que llegue bien caliente en el centro.",
+];
+
+const PRACTICAL_TIPS_EXAMPLES: string[] = [
+  "Si te queda espeso, añade 1-2 cucharadas de agua caliente.",
+  "Prueba de sal al final, justo antes de servir.",
+  "Si usas bote de garbanzos, lávalos bien para que quede más suave.",
+  "Prepara los ingredientes antes de empezar para cocinar más rápido.",
+  "Deja reposar 5 minutos antes de servir para que se asienten los sabores.",
 ];
 
 function capitalizeIngredientName(name: string): string {
@@ -35,12 +80,19 @@ function CompartirContent() {
   const [title, setTitle] = useState("");
   const [nationality, setNationality] = useState("");
   const [timeMinutes, setTimeMinutes] = useState<string>("");
-  const [dietTags, setDietTags] = useState<DietTag[]>([]);
+  const [dietTags, setDietTags] = useState<RecipeTag[]>([]);
   const [baseServings, setBaseServings] = useState<1 | 2 | 4>(4);
   const [ingredientsText, setIngredientsText] = useState("");
   const [stepsText, setStepsText] = useState("");
   const [tips, setTips] = useState("");
   const [storage, setStorage] = useState("");
+  const [curiosidades, setCuriosidades] = useState("");
+  const [storagePlaceholder, setStoragePlaceholder] = useState(
+    "Ej. La mayor parte de las recetas aguanta perfectamente 3-4 días en la nevera en recipiente hermético."
+  );
+  const [tipsPlaceholder, setTipsPlaceholder] = useState(
+    "Ej. Si te queda espeso, añade 1-2 cucharadas de agua caliente."
+  );
   const [existingImagePaths, setExistingImagePaths] = useState<string[]>([]);
   const [newFiles, setNewFiles] = useState<File[]>([]);
   const [newPreviews, setNewPreviews] = useState<string[]>([]);
@@ -330,6 +382,7 @@ function CompartirContent() {
         setStepsText(Array.isArray(r.steps) ? r.steps.join("\n") : "");
         setTips(r.tips ?? "");
         setStorage(r.storage ?? "");
+        setCuriosidades(r.curiosidades ?? "");
         if (Array.isArray(r.image_paths) && r.image_paths.length > 0) {
           setExistingImagePaths(r.image_paths.filter((p: unknown) => typeof p === "string" && p.trim()));
         } else if (r.image_path?.trim()) {
@@ -338,6 +391,18 @@ function CompartirContent() {
         setLoadingEdit(false);
       });
   }, [user, editId]);
+
+  useEffect(() => {
+    if (STORAGE_TIPS.length === 0) return;
+    const idx = Math.floor(Math.random() * STORAGE_TIPS.length);
+    setStoragePlaceholder(`Ej. ${STORAGE_TIPS[idx]}`);
+  }, []);
+
+  useEffect(() => {
+    if (PRACTICAL_TIPS_EXAMPLES.length === 0) return;
+    const idx = Math.floor(Math.random() * PRACTICAL_TIPS_EXAMPLES.length);
+    setTipsPlaceholder(`Ej. ${PRACTICAL_TIPS_EXAMPLES[idx]}`);
+  }, []);
 
   useEffect(() => {
     const urls = newFiles.map((f) => URL.createObjectURL(f));
@@ -390,7 +455,7 @@ function CompartirContent() {
     );
   }
 
-  function toggleDietTag(tag: DietTag) {
+  function toggleDietTag(tag: RecipeTag) {
     setDietTags((prev) =>
       prev.includes(tag) ? prev.filter((t) => t !== tag) : [...prev, tag]
     );
@@ -554,6 +619,7 @@ function CompartirContent() {
           steps,
           tips: tips.trim() || null,
           storage: storage.trim() || null,
+          curiosidades: curiosidades.trim() || null,
           baseServings,
           image_path: imagePath,
           image_paths: imagePaths,
@@ -564,7 +630,10 @@ function CompartirContent() {
 
       if (updateError) {
         const um = (updateError.message ?? "").toLowerCase();
-        const isMissingColumn = um.includes("image_paths") || um.includes("schema cache");
+        const isMissingColumn =
+          um.includes("image_paths") ||
+          um.includes("curiosidades") ||
+          um.includes("schema cache");
 
         // Fallback: reintentar sin image_paths para no bloquear a la usuaria
         if (isMissingColumn) {
@@ -624,6 +693,7 @@ function CompartirContent() {
           steps,
           tips: tips.trim() || null,
           storage: storage.trim() || null,
+          curiosidades: curiosidades.trim() || null,
           baseServings,
           image_path: imagePath,
           image_paths: imagePaths,
@@ -637,7 +707,9 @@ function CompartirContent() {
       const isRls =
         msg.includes("row-level security") || msg.includes("policy");
       const isMissingColumn =
-        msg.includes("image_paths") || msg.includes("schema cache");
+        msg.includes("image_paths") ||
+        msg.includes("curiosidades") ||
+        msg.includes("schema cache");
 
       // Fallback: reintentar insert sin image_paths si la columna no existe
       if (isMissingColumn) {
@@ -709,13 +781,22 @@ function CompartirContent() {
       </header>
 
       <section className="flex-1 px-4 py-4 pb-8 overflow-y-auto">
-        <p className="text-sm text-muted-foreground mb-4">
-          {editId
-            ? "Modifica los campos que quieras y guarda. Puedes tener hasta 6 fotos en la receta."
-            : "Crea una receta sencilla para compartirla con otras personas en TaulApp. Puedes subir hasta 6 fotos."}
-        </p>
-
         <form onSubmit={handleSubmit} className="space-y-4">
+          <div className="space-y-1.5">
+            <label className="text-sm font-medium text-foreground" htmlFor="recipe-title">
+              Título de la receta <span className="text-destructive">*</span>
+            </label>
+            <Input
+              id="recipe-title"
+              type="text"
+              required
+              value={title}
+              onChange={(e) => setTitle(e.target.value)}
+              placeholder="Ej. Hummus cremoso de garbanzo"
+              className="rounded-xl bg-white border-border"
+            />
+          </div>
+
           <div className="space-y-1.5">
             <label className="text-sm font-medium text-foreground">
               Fotos de la receta (máx. {MAX_RECIPE_IMAGES}) <span className="text-destructive">*</span>
@@ -780,20 +861,6 @@ function CompartirContent() {
             )}
           </div>
 
-          <div className="space-y-1.5">
-            <label className="text-sm font-medium text-foreground" htmlFor="recipe-title">
-              Título de la receta <span className="text-destructive">*</span>
-            </label>
-            <Input
-              id="recipe-title"
-              type="text"
-              required
-              value={title}
-              onChange={(e) => setTitle(e.target.value)}
-              placeholder="Ej. Hummus cremoso de garbanzo"
-            />
-          </div>
-
           <div className="flex gap-3">
             <div className="flex-1 space-y-1.5">
               <label className="text-sm font-medium text-foreground" htmlFor="recipe-nationality">
@@ -818,6 +885,7 @@ function CompartirContent() {
                 value={timeMinutes}
                 onChange={(e) => setTimeMinutes(e.target.value)}
                 placeholder="30"
+                className="rounded-xl bg-white border-border"
               />
             </div>
           </div>
@@ -842,18 +910,40 @@ function CompartirContent() {
                       : "bg-muted text-muted-foreground hover:bg-muted/80"
                   }`}
                 >
-                  {n} ración{n > 1 ? "es" : ""}
+                  {n} {n > 1 ? "raciones" : "ración"}
                 </button>
               ))}
             </div>
           </div>
 
           <div className="space-y-1.5">
-            <label className="text-sm font-medium text-foreground">
-              Etiquetas (opcional)
-            </label>
+            <label className="text-sm font-medium text-foreground">Etiquetas (opcional)</label>
+            <p className="text-xs text-muted-foreground">
+              Añade etiquetas para facilitar la búsqueda de tus recetas.
+            </p>
+            <p className="text-xs text-muted-foreground">Dieta</p>
             <div className="flex flex-wrap gap-2">
               {DIET_TAGS.map((tag) => {
+                const active = dietTags.includes(tag.id);
+                return (
+                  <button
+                    key={tag.id}
+                    type="button"
+                    onClick={() => toggleDietTag(tag.id)}
+                    className={`px-3 py-1.5 rounded-full text-xs font-medium border ${
+                      active
+                        ? "bg-primary text-primary-foreground border-primary"
+                        : "bg-muted text-muted-foreground border-border"
+                    }`}
+                  >
+                    {tag.label}
+                  </button>
+                );
+              })}
+            </div>
+            <p className="text-xs text-muted-foreground mt-2">Sabor</p>
+            <div className="flex flex-wrap gap-2">
+              {FLAVOR_TAGS.map((tag) => {
                 const active = dietTags.includes(tag.id);
                 return (
                   <button
@@ -917,6 +1007,7 @@ function CompartirContent() {
               onChange={(e) => setTips(e.target.value)}
               rows={3}
               className="w-full rounded-xl border border-border bg-card px-3 py-2 text-sm resize-vertical"
+              placeholder={tipsPlaceholder}
             />
           </div>
 
@@ -929,6 +1020,20 @@ function CompartirContent() {
               onChange={(e) => setStorage(e.target.value)}
               rows={3}
               className="w-full rounded-xl border border-border bg-card px-3 py-2 text-sm resize-vertical"
+              placeholder={storagePlaceholder}
+            />
+          </div>
+
+          <div className="space-y-1.5">
+            <label className="text-sm font-medium text-foreground">
+              Curiosidades y tradición (opcional)
+            </label>
+            <textarea
+              value={curiosidades}
+              onChange={(e) => setCuriosidades(e.target.value)}
+              rows={4}
+              className="w-full rounded-xl border border-border bg-card px-3 py-2 text-sm resize-vertical"
+              placeholder="Ej. Origen del plato, forma tradicional de servirlo, costumbres..."
             />
           </div>
 

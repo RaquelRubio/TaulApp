@@ -27,6 +27,7 @@ function getAuthorByRecipeId(recipeId: string): TeamMember | null {
 const RECIPE_IMAGE_OVERRIDES: Record<string, string> = {
   fattouch: "fattouch.png",
   kanafeh: "knafeh.jpeg",
+  "hummus-clasico": "hummus-clasico.png",
 };
 
 /** Opciones por categoría; se muestra solo una y se va alternando. */
@@ -366,21 +367,57 @@ function getStableIngredientRecommendation(ingKey: string, ingName: string): str
 
 const TAG_LABELS: Record<string, string> = {
   vegano: "Vegano",
+  vegetariano: "Vegetariano",
+  pescetariano: "Pescetariano",
+  sin_frutos_secos: "Sin frutos secos",
+  alta_proteina: "Alta en proteína",
   halal: "Halal",
   kosher: "Kosher",
   sin_gluten: "Sin gluten",
   sin_lactosa: "Sin lactosa",
+  dulce: "Dulce",
+  salado: "Salado",
+  picante: "Picante",
+  muy_picante: "Muy picante",
+  acido: "Ácido",
+  agridulce: "Agridulce",
 };
 
 const TAG_COLORS: Record<string, string> = {
   vegano: "bg-emerald-100 text-emerald-800",
+  vegetariano: "bg-lime-100 text-lime-800",
+  pescetariano: "bg-cyan-100 text-cyan-800",
+  sin_frutos_secos: "bg-teal-100 text-teal-800",
+  alta_proteina: "bg-blue-100 text-blue-800",
   halal: "bg-sky-100 text-sky-800",
   kosher: "bg-violet-100 text-violet-800",
   sin_gluten: "bg-amber-100 text-amber-800",
   sin_lactosa: "bg-rose-100 text-rose-800",
+  dulce: "bg-pink-100 text-pink-800",
+  salado: "bg-slate-100 text-slate-800",
+  picante: "bg-red-100 text-red-800",
+  muy_picante: "bg-rose-200 text-rose-900",
+  acido: "bg-yellow-100 text-yellow-800",
+  agridulce: "bg-fuchsia-100 text-fuchsia-800",
 };
 
-const DIET_TAGS = ["vegano", "halal", "kosher", "sin_gluten", "sin_lactosa"];
+const DIET_TAGS = [
+  "vegano",
+  "vegetariano",
+  "pescetariano",
+  "sin_frutos_secos",
+  "alta_proteina",
+  "halal",
+  "kosher",
+  "sin_gluten",
+  "sin_lactosa",
+  "dulce",
+  "salado",
+  "picante",
+  "muy_picante",
+  "acido",
+  "agridulce",
+];
 
 /** Convierte texto con **negrita** en nodos React (texto y <strong>). */
 function renderTextWithBold(text: string | undefined): React.ReactNode {
@@ -841,6 +878,22 @@ function RecipeContent({
             </h3>
             <p className="text-sm text-foreground/90 whitespace-pre-line">
               {renderTextWithBold(recipe.tips ?? (Array.isArray((recipe as { notes?: string[] }).notes) ? (recipe as { notes: string[] }).notes.join("\n") : ""))}
+            </p>
+          </section>
+        )}
+
+        {/* Curiosidades y tradición */}
+        {((recipe as { curiosidades?: string }).curiosidades ?? "").trim() && (
+          <section className="mt-5 rounded-xl bg-emerald-50 border border-emerald-100 p-4">
+            <h3 className="text-sm font-bold text-foreground flex items-center gap-2 mb-1">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M12 3l1.6 3.8L18 8.4l-3.2 2.7L15.7 15 12 12.8 8.3 15l.9-3.9L6 8.4l4.4-1.6L12 3z" />
+                <path d="M19 17l.8 1.9L22 19.7l-1.6 1.3.5 2-1.9-1.1-1.9 1.1.5-2L16 19.7l2.2-.8L19 17z" />
+              </svg>
+              Curiosidades y tradición
+            </h3>
+            <p className="text-sm text-foreground/90 whitespace-pre-line">
+              {renderTextWithBold((recipe as { curiosidades?: string }).curiosidades)}
             </p>
           </section>
         )}

@@ -70,7 +70,6 @@
       "vegano",
       "halal",
       "kosher",
-      "sin_gluten",
       "sin_lactosa"
     ],
     "baseServings": 1,
@@ -344,8 +343,7 @@
     "nationality": "española",
     "time": 25,
     "tags": [
-      "vegetariano",
-      "sin_gluten"
+      "vegano"
     ],
     "baseServings": 1,
     "ingredients": [

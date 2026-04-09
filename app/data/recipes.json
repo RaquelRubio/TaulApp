@@ -59,7 +59,8 @@
     "notes": [
       "Se puede hacer sin tahini si no se encuentra; queda más suave y menos intenso.",
       "Apto para batch cooking."
-    ]
+    ],
+    "curiosidades": "El hummus es un clásico del Levante mediterráneo (Palestina, Líbano, Siria y países vecinos) y se comparte desde hace generaciones en mesas familiares y de celebración.\n\nSu nombre viene del árabe **hummus**, que significa **garbanzo**.\n\nLa forma tradicional de servirlo es en plato, haciendo un hueco en el centro para añadir aceite de oliva y, muchas veces, pimentón o comino por encima."
   },
   {
     "id": "gazpacho-andaluz",
@@ -70,7 +71,6 @@
       "vegano",
       "halal",
       "kosher",
-      "sin_gluten",
       "sin_lactosa"
     ],
     "baseServings": 1,
@@ -344,8 +344,7 @@
     "nationality": "española",
     "time": 10,
     "tags": [
-      "vegetariano",
-      "sin_gluten"
+      "vegano"
     ],
     "baseServings": 1,
     "ingredients": [

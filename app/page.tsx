@@ -35,25 +35,44 @@ const nationalityFlag: Record<string, string> = {
 const dietaryTagStyle: Record<string, string> = {
   vegano: "bg-emerald-100 text-emerald-800",
   vegetariano: "bg-lime-100 text-lime-800",
+  pescetariano: "bg-cyan-100 text-cyan-800",
+  sin_frutos_secos: "bg-teal-100 text-teal-800",
+  alta_proteina: "bg-blue-100 text-blue-800",
   halal: "bg-sky-100 text-sky-800",
   kosher: "bg-violet-100 text-violet-800",
   sin_lactosa: "bg-amber-100 text-amber-800",
   sin_gluten: "bg-orange-100 text-orange-800",
+  dulce: "bg-pink-100 text-pink-800",
+  salado: "bg-slate-100 text-slate-800",
+  picante: "bg-red-100 text-red-800",
+  muy_picante: "bg-rose-200 text-rose-900",
+  acido: "bg-yellow-100 text-yellow-800",
+  agridulce: "bg-fuchsia-100 text-fuchsia-800",
 };
 
 const dietaryLabel: Record<string, string> = {
   vegano: "Vegano",
   vegetariano: "Vegetariano",
+  pescetariano: "Pescetariano",
+  sin_frutos_secos: "Sin frutos secos",
+  alta_proteina: "Alta en proteína",
   halal: "Halal",
   kosher: "Kosher",
   sin_lactosa: "Sin lactosa",
   sin_gluten: "Sin gluten",
+  dulce: "Dulce",
+  salado: "Salado",
+  picante: "Picante",
+  muy_picante: "Muy picante",
+  acido: "Ácido",
+  agridulce: "Agridulce",
 };
 
 /** Recetas con imagen en .png u otro formato distinto a .jpeg */
 const RECIPE_IMAGE_OVERRIDES: Record<string, string> = {
   fattouch: "fattouch.png",
   kanafeh: "knafeh.jpeg",
+  "hummus-clasico": "hummus-clasico.png",
 };
 
 /** Normaliza nacionalidad para filtrar (española/espanola → espanola, marroquí/marroqui → marroqui). */
@@ -282,10 +301,19 @@ export default function Home() {
   const [filters, setFilters] = useState({
     vegano: false,
     vegetariano: false,
+    pescetariano: false,
+    sin_frutos_secos: false,
+    alta_proteina: false,
     halal: false,
     kosher: false,
     sin_lactosa: false,
     sin_gluten: false,
+    dulce: false,
+    salado: false,
+    picante: false,
+    muy_picante: false,
+    acido: false,
+    agridulce: false,
   });
 
   const [communityRecipes, setCommunityRecipes] = useState<any[]>([]);
@@ -634,27 +662,55 @@ export default function Home() {
         })}
       </div>
 
-      {/* Sección Opciones alimentarias (colapsable) */}
+      {/* Sección Etiquetas (colapsable) */}
       <section className="px-4 mt-4">
         <button
           type="button"
           onClick={() => setOpcionesOpen(!opcionesOpen)}
           className="w-full flex items-center justify-between py-2 text-left"
         >
-          <h2 className="font-bold text-foreground">Opciones alimentarias</h2>
+          <h2 className="font-bold text-foreground">Etiquetas</h2>
           <ChevronDown className={cn("h-5 w-5 text-muted-foreground transition-transform", opcionesOpen && "rotate-180")} />
         </button>
 
         {opcionesOpen && (
           <div className="pt-2 pb-4 space-y-3">
+            <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Dieta</p>
             <div className="grid gap-2">
               {[
                 ["vegano", "Vegano"],
                 ["vegetariano", "Vegetariano"],
+                ["pescetariano", "Pescetariano"],
+                ["sin_frutos_secos", "Sin frutos secos"],
+                ["alta_proteina", "Alta en proteína"],
                 ["halal", "Halal"],
                 ["kosher", "Kosher"],
                 ["sin_lactosa", "Sin lactosa"],
                 ["sin_gluten", "Sin gluten"],
+              ].map(([key, label]) => (
+                <label
+                  key={key}
+                  className="flex items-center justify-between border rounded-xl p-3 cursor-pointer hover:bg-accent/50 transition-colors"
+                >
+                  <span className="font-medium">{label}</span>
+                  <Checkbox
+                    checked={(filters as Record<string, boolean>)[key]}
+                    onCheckedChange={(checked) =>
+                      setFilters((prev) => ({ ...prev, [key]: checked }))
+                    }
+                  />
+                </label>
+              ))}
+            </div>
+            <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground pt-1">Sabor</p>
+            <div className="grid gap-2">
+              {[
+                ["dulce", "Dulce"],
+                ["salado", "Salado"],
+                ["picante", "Picante"],
+                ["muy_picante", "Muy picante"],
+                ["acido", "Ácido"],
+                ["agridulce", "Agridulce"],
               ].map(([key, label]) => (
                 <label
                   key={key}
