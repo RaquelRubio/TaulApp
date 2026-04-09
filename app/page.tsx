@@ -293,6 +293,8 @@ export default function Home() {
   const [mounted, setMounted] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [opcionesOpen, setOpcionesOpen] = useState(false);
+  const [dietaOpen, setDietaOpen] = useState(false);
+  const [saborOpen, setSaborOpen] = useState(false);
   const [randomKey, setRandomKey] = useState(0);
   const [suggestOpen, setSuggestOpen] = useState(false);
   const [activeSuggestIdx, setActiveSuggestIdx] = useState<number>(-1);
@@ -675,57 +677,76 @@ export default function Home() {
 
         {opcionesOpen && (
           <div className="pt-2 pb-4 space-y-3">
-            <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Dieta</p>
-            <div className="grid gap-2">
-              {[
-                ["vegano", "Vegano"],
-                ["vegetariano", "Vegetariano"],
-                ["pescetariano", "Pescetariano"],
-                ["sin_frutos_secos", "Sin frutos secos"],
-                ["alta_proteina", "Alta en proteína"],
-                ["halal", "Halal"],
-                ["kosher", "Kosher"],
-                ["sin_lactosa", "Sin lactosa"],
-                ["sin_gluten", "Sin gluten"],
-              ].map(([key, label]) => (
-                <label
-                  key={key}
-                  className="flex items-center justify-between border rounded-xl p-3 cursor-pointer hover:bg-accent/50 transition-colors"
-                >
-                  <span className="font-medium">{label}</span>
-                  <Checkbox
-                    checked={(filters as Record<string, boolean>)[key]}
-                    onCheckedChange={(checked) =>
-                      setFilters((prev) => ({ ...prev, [key]: checked }))
-                    }
-                  />
-                </label>
-              ))}
-            </div>
-            <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground pt-1">Sabor</p>
-            <div className="grid gap-2">
-              {[
-                ["dulce", "Dulce"],
-                ["salado", "Salado"],
-                ["picante", "Picante"],
-                ["muy_picante", "Muy picante"],
-                ["acido", "Ácido"],
-                ["agridulce", "Agridulce"],
-              ].map(([key, label]) => (
-                <label
-                  key={key}
-                  className="flex items-center justify-between border rounded-xl p-3 cursor-pointer hover:bg-accent/50 transition-colors"
-                >
-                  <span className="font-medium">{label}</span>
-                  <Checkbox
-                    checked={(filters as Record<string, boolean>)[key]}
-                    onCheckedChange={(checked) =>
-                      setFilters((prev) => ({ ...prev, [key]: checked }))
-                    }
-                  />
-                </label>
-              ))}
-            </div>
+            <button
+              type="button"
+              onClick={() => setDietaOpen((v) => !v)}
+              className="w-full flex items-center justify-between rounded-xl border border-border px-3 py-2.5 text-left"
+            >
+              <span className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Dieta</span>
+              <ChevronDown className={cn("h-4 w-4 text-muted-foreground transition-transform", dietaOpen && "rotate-180")} />
+            </button>
+            {dietaOpen && (
+              <div className="grid gap-2">
+                {[
+                  ["vegano", "Vegano"],
+                  ["vegetariano", "Vegetariano"],
+                  ["pescetariano", "Pescetariano"],
+                  ["sin_frutos_secos", "Sin frutos secos"],
+                  ["alta_proteina", "Alta en proteína"],
+                  ["halal", "Halal"],
+                  ["kosher", "Kosher"],
+                  ["sin_lactosa", "Sin lactosa"],
+                  ["sin_gluten", "Sin gluten"],
+                ].map(([key, label]) => (
+                  <label
+                    key={key}
+                    className="flex items-center justify-between border rounded-xl p-3 cursor-pointer hover:bg-accent/50 transition-colors"
+                  >
+                    <span className="font-medium">{label}</span>
+                    <Checkbox
+                      checked={(filters as Record<string, boolean>)[key]}
+                      onCheckedChange={(checked) =>
+                        setFilters((prev) => ({ ...prev, [key]: checked }))
+                      }
+                    />
+                  </label>
+                ))}
+              </div>
+            )}
+
+            <button
+              type="button"
+              onClick={() => setSaborOpen((v) => !v)}
+              className="w-full flex items-center justify-between rounded-xl border border-border px-3 py-2.5 text-left"
+            >
+              <span className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Sabor</span>
+              <ChevronDown className={cn("h-4 w-4 text-muted-foreground transition-transform", saborOpen && "rotate-180")} />
+            </button>
+            {saborOpen && (
+              <div className="grid gap-2">
+                {[
+                  ["dulce", "Dulce"],
+                  ["salado", "Salado"],
+                  ["picante", "Picante"],
+                  ["muy_picante", "Muy picante"],
+                  ["acido", "Ácido"],
+                  ["agridulce", "Agridulce"],
+                ].map(([key, label]) => (
+                  <label
+                    key={key}
+                    className="flex items-center justify-between border rounded-xl p-3 cursor-pointer hover:bg-accent/50 transition-colors"
+                  >
+                    <span className="font-medium">{label}</span>
+                    <Checkbox
+                      checked={(filters as Record<string, boolean>)[key]}
+                      onCheckedChange={(checked) =>
+                        setFilters((prev) => ({ ...prev, [key]: checked }))
+                      }
+                    />
+                  </label>
+                ))}
+              </div>
+            )}
           </div>
         )}
       </section>
