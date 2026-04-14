@@ -98,6 +98,7 @@ Todas las recetas deben incluir, en este orden:
 **Notas:**
 - Se puede hacer sin tahini si no se encuentra; queda más suave y menos intenso.
 - Apto para batch cooking.
+- Es una crema muy tradicional del Levante mediterráneo (Palestina, Líbano, Siria y Jordania) y suele servirse en el centro de la mesa para compartir.
 
 ---
 
@@ -245,6 +246,7 @@ Todas las recetas deben incluir, en este orden:
 **Notas:**
 - Se puede hacer sin cebolla.
 - Mejor con patatas harinosas.
+- En muchas casas españolas la tortilla es receta de toda la vida y cambia según la zona: más o menos cuajada, con cebolla o sin cebolla.
 
 ---
 
