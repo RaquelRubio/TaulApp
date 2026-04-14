@@ -562,6 +562,11 @@ function RecipeContent({
 
   const displayTags = (recipe.tags ?? []).filter((t: string) => DIET_TAGS.includes(t));
   const servingsOptions = Array.isArray(recipe.servings) ? recipe.servings : [1, 2, 4];
+  const notes = Array.isArray((recipe as { notes?: string[] }).notes)
+    ? (recipe as { notes: string[] }).notes
+    : [];
+  const traditionNotes = notes.filter((n) => /tradici[oó]n|tradicional|origen|levante|mesa/i.test(String(n)));
+  const practicalNotes = notes.filter((n) => !/tradici[oó]n|tradicional|origen|levante|mesa/i.test(String(n)));
 
   const recipeTitle = recipe.title ?? (recipe as { name?: string }).name ?? recipe.id;
   const shareText = `Mira esta receta: ${recipeTitle}`;
@@ -868,8 +873,25 @@ function RecipeContent({
           </section>
         )}
 
+        {/* Tradición y contexto */}
+        {traditionNotes.length > 0 && (
+          <section className="mb-5 rounded-xl bg-indigo-50 border border-indigo-100 p-4">
+            <h3 className="text-sm font-bold text-foreground flex items-center gap-2 mb-1">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M12 3l8 4-8 4-8-4 8-4z" />
+                <path d="M4 11l8 4 8-4" />
+                <path d="M4 15l8 4 8-4" />
+              </svg>
+              Tradición y contexto
+            </h3>
+            <p className="text-sm text-foreground/90 whitespace-pre-line">
+              {traditionNotes.join("\n")}
+            </p>
+          </section>
+        )}
+
         {/* Consejos prácticos */}
-        {(recipe.tips || (Array.isArray((recipe as { notes?: string[] }).notes) && (recipe as { notes: string[] }).notes.length > 0)) && (
+        {(recipe.tips || practicalNotes.length > 0) && (
           <section className="rounded-xl bg-amber-50 border border-amber-100 p-4">
             <h3 className="text-sm font-bold text-foreground flex items-center gap-2 mb-1">
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -878,7 +900,7 @@ function RecipeContent({
               Consejos prácticos
             </h3>
             <p className="text-sm text-foreground/90 whitespace-pre-line">
-              {renderTextWithBold(recipe.tips ?? (Array.isArray((recipe as { notes?: string[] }).notes) ? (recipe as { notes: string[] }).notes.join("\n") : ""))}
+              {renderTextWithBold(recipe.tips ?? practicalNotes.join("\n"))}
             </p>
           </section>
         )}
