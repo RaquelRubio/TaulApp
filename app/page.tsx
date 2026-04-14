@@ -73,6 +73,7 @@ const RECIPE_IMAGE_OVERRIDES: Record<string, string> = {
   fattouch: "fattouch.png",
   kanafeh: "knafeh.jpeg",
   "hummus-clasico": "hummus-clasico.png",
+  "gazpacho-andaluz": "gazpacho-andaluz.png",
 };
 
 /** Normaliza nacionalidad para filtrar (española/espanola → espanola, marroquí/marroqui → marroqui). */
