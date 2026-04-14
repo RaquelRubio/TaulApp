@@ -1,5 +1,6 @@
 import BottomNav from "./components/BottomNav";
 import AuthRecoveryWatcher from "./components/AuthRecoveryWatcher";
+import GuestLoginPrompt from "./components/GuestLoginPrompt";
 import "./globals.css";
 
 export const viewport = {
@@ -17,6 +18,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           {/* paddingBottom para que la barra no tape el contenido */}
           <div className="pb-[72px]">{children}</div>
           <BottomNav />
+          <GuestLoginPrompt />
         </AuthRecoveryWatcher>
       </body>
     </html>
